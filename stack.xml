@@ -1,0 +1,11 @@
+<stack>
+  <description brief="Algorithms stack">
+    The stack contains packages related to candidate controller and observer designs.
+  </description>
+  <author>Maintained by Fangyu Wu</author>
+  <license>MIT</license>
+  <review status="unreviewed" notes=""/>
+  <url>https://github.com/CIRCLES-consortium/algos-stack</url>
+  <depend stack="ros"/>
+  <depend stack="cosim-stack"/>
+</stack>
