@@ -18,6 +18,8 @@ The controller is a Time-Headway Follower-Stopper.
 
 At each time step, its desired velocity should be set to `v_des = leader_speed + v_des_delta`.
 
+What's to do if no leader car is detected is TBD. Probably set `v_des = speed_limit`. 
+
 **I/O examples**
 
 ```
