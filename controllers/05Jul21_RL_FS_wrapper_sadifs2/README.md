@@ -8,8 +8,6 @@ where
 - `leader_speed` is the speed of the AV's leader (in m/s)
 - `headway` is the bumper-to-bumper gap between the AV and its leader (in m)
 
-The last 3 states are padding.
-
 **Controller output**
 
 Output vector: `[v_des_delta]`
