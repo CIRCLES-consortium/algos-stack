@@ -1,6 +1,6 @@
 **Controller input**
 
-Input vector: `[av_speed / 40.0, leader_speed / 40.0, headway / 100.0, 0.0, 0.0, 0.0]`
+Input vector: `[av_speed / 40.0, leader_speed / 40.0, headway / 100.0]`
 
 where
 
