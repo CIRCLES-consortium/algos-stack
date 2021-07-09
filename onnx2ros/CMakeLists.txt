@@ -112,10 +112,15 @@ catkin_package(
 ## Your package locations should be listed before other locations
 include_directories(
     include
-    ${catkin_INCLUDE_DIRS}
-    thirdparty/onnxruntime-linux-x64-1.8.0/include)
+    ${catkin_INCLUDE_DIRS})
 
-link_directories(thirdparty/onnxruntime-linux-x64-1.8.0/lib)
+if (${CMAKE_HOST_SYSTEM_PROCESSOR} MATCHES "aarch64")
+    include_directories(thirdparty/onnxruntime-linux-aarch64-1.8.0/include)
+    link_directories(thirdparty/onnxruntime-linux-aarch64-1.8.0/lib)
+else()
+    include_directories(thirdparty/onnxruntime-linux-x64-1.8.0/include)
+    link_directories(thirdparty/onnxruntime-linux-x64-1.8.0/lib)
+endif()
 
 ## Declare a C++ library
 #add_library(
