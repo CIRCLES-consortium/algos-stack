@@ -1,0 +1,6 @@
+<launch>
+    <param name="model" type="string" value="$(find onnx2ros)/../controllers/05Jul21_RL_FS_wrapper_sadifs2/05Jul21_RL_FS_wrapper_sadifs2.onnx"/>
+    <param name="mode" type="string" value="prompt"/>
+    <node pkg="onnx2ros" type="prompt_mode" name="controller" output="screen"/>
+    <node pkg="onnx2ros" type="mock_sensors.py" name="sensors" output="screen"/>
+</launch>
