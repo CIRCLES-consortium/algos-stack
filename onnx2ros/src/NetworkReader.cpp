@@ -27,7 +27,7 @@ double BaseReader::forward(std::vector<float> input_values) {
 
 SynchronousReader::SynchronousReader(ros::NodeHandle *nh, std::string onnx_model):
     BaseReader(nh, std::move(onnx_model)){
-  pub = nh->advertise<geometry_msgs::TwistStamped>("v_des_delta", 10);
+  pub = nh->advertise<geometry_msgs::TwistStamped>("v_des", 10);
   sub_v.subscribe(*nh, "vel", 10);
   sub_lv.subscribe(*nh, "leader_vel", 10);
   sub_h.subscribe(*nh, "headway_est", 10);
@@ -57,7 +57,7 @@ void SynchronousReader::callback(const geometry_msgs::TwistStampedConstPtr& v_ms
 
 PromptReader::PromptReader(ros::NodeHandle *nh, std::string onnx_model):
     BaseReader(nh, std::move(onnx_model)){
-  pub = nh->advertise<std_msgs::Float64>("v_des_delta", 10);
+  pub = nh->advertise<std_msgs::Float64>("v_des", 10);
   sub_v = nh->subscribe("vel", 10, &PromptReader::callback_v, this);
   sub_lv = nh->subscribe("leader_vel", 10, &PromptReader::callback_lv, this);
   sub_h = nh->subscribe("headway_est", 10, &PromptReader::callback_h, this);

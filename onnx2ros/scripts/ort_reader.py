@@ -27,9 +27,9 @@ def main(args):
 
     ort_session = ort.InferenceSession(onnx_model)
     data = np.array([
-        [0.14855019, 0.1362198, 0.13667326],
-        [0.52693541, 0.5538559, 0.25393719],
-        [0.63994685, 0.64963934, 0.29815035],
+        [5, 5, 20],
+        [5, 20, 30],
+        [30, 10, 50],
     ]).astype(np.float32)
     outputs = ort_session.run(None, {ort_session.get_inputs()[0].name: data})
     logging.info(outputs)
