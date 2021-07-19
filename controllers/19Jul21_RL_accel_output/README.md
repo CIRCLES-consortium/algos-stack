@@ -25,7 +25,7 @@ The controller is a Time-Headway Follower-Stopper.
 The desired speed should be set as `v_des = av_speed + T * accel` at each time step.
 
 `T` (integration time step in seconds) is a design parameter. Try setting `T = 0.6` first. 
-If several controllers can be tested, we can try values around `0.6` as well. 
+If several controllers can be tested, we can try values 0.05 and also values around 0.6 like 0.4 and 0.8.
 
 **I/O examples**
 
