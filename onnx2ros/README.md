@@ -43,7 +43,7 @@ The synchronous mode of the node subscribes to three topics:
 + `/leader_vel`: velocity of lead vehicle of type `geometry_msgs/TwistStamped`
 + `/headway_est`: velocity of ego vehicle of type `geometry_msgs/TwistStamped`
 
-It publishes to the following topic at 20 Hz:
+It publishes to the following topic upon receiving a syncrhonized topic:
 + `/v_des`: desired velocity of type `geometry_msgs/TwistStamped`
 
 The interface is mostly identical to prompt mode.
