@@ -2,8 +2,11 @@
 
 This is a lightweight ROS node that executes an ONNX neural network model of 
 three inputs and a single output.
+There are two modes of the node: a prompt mode and a synchronous mode.
 
-## Specifications
+As of now, only the prompt mode is supported in the current RAV4 ROS application.
+
+## Prompt Mode (Default)
 
 The default prompt mode of the node subscribes to three topics:
 + `/vel`: velocity of ego vehicle of type `geometry_msgs/Twist`
@@ -12,8 +15,6 @@ The default prompt mode of the node subscribes to three topics:
 
 It publishes to the following topic at 20 Hz:
 + `/v_des`: desired velocity of type `std_msgs/Float64`
-
-## Usage
 
 To test an `example.onnx` model with input `/vel = x`, `/leader_vel = y`
 and `/headway_est = z`, use the following launch file:
@@ -47,3 +48,13 @@ It publishes to the following topic at 20 Hz:
 
 The interface is mostly identical to prompt mode.
 See `launch/test_sync_mode.launch` for a sample use case.
+
+## Python Reader
+
+The python script `script/ort_reader.py` can be used to 
+quickly check for correct exporting of a neural network model to ONNX format.
+To run the script on an `example.onnx` model with input `/vel = x`, 
+`/leader_vel = y` and `/headway_est = z`, run
+```angular2html
+python ort_reader.py -m path/to/example.onnx -v x -lv y -s z
+```
