@@ -27,12 +27,13 @@ class BaseReader{
   std::vector<std::vector<int64_t>> input_shapes;
   double HEADWAY_SCALE;
   double SPEED_SCALE;
+  double T_param;
   std::string ego_vel_topic;
   std::string headway_topic;
   std::string relative_vel_topic;
-
+  
   bool use_leadvel;
-
+  bool use_accel_predict;
 
  public:
   BaseReader(ros::NodeHandle *nh, std::string onnx_model);

@@ -20,6 +20,8 @@ BaseReader::BaseReader(ros::NodeHandle *nh, std::string onnx_model):
   nh->param("relative_vel_topic", relative_vel_topic, std::string("/rel_vel")); 
   nh->param("headway_topic", headway_topic, std::string("/lead_dist")); 
   nh->param("use_lead_vel", use_leadvel, false); 
+  nh->param("T", T_param, 0.6); 
+  nh->param("use_accel_predict", use_accel_predict, false); 
 }
 
 double BaseReader::forward(std::vector<float> input_values) {
@@ -78,6 +80,12 @@ PromptReader::PromptReader(ros::NodeHandle *nh, std::string onnx_model):
   ROS_INFO_STREAM("use lead vel: "<< use_leadvel);
   ROS_INFO_STREAM("headyway scale: "<< HEADWAY_SCALE);
   ROS_INFO_STREAM("speed scale: "<< SPEED_SCALE);
+
+  if (use_accel_predict)
+  {
+	  ROS_INFO_STREAM("We will predict acceleration first. Acceleration will be on linear.z component");
+  }
+  ROS_INFO_STREAM("T Parameter is :"<<T_param);
 }
 
 void PromptReader::callback_v(const geometry_msgs::Twist& v_msg) {state_v = v_msg;}
@@ -119,5 +127,11 @@ void PromptReader::publish() {
 
   geometry_msgs::Twist delta_v;
   delta_v.linear.x = PromptReader::forward(input_values);
+	
+  if (use_accel_predict)
+  {
+	  delta_v.linear.z = delta_v.linear.x;
+	  delta_v.linear.x = T_param*delta_v.linear.x + state_v.linear.x; 
+  }
   pub.publish(delta_v);
 }
