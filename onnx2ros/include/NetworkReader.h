@@ -25,6 +25,14 @@ class BaseReader{
   Ort::Experimental::Session session;
   std::vector<std::string> input_names, output_names;
   std::vector<std::vector<int64_t>> input_shapes;
+  double HEADWAY_SCALE;
+  double SPEED_SCALE;
+  std::string ego_vel_topic;
+  std::string headway_topic;
+  std::string relative_vel_topic;
+
+  bool use_leadvel;
+
 
  public:
   BaseReader(ros::NodeHandle *nh, std::string onnx_model);
@@ -51,8 +59,8 @@ class SynchronousReader : BaseReader{
 
 class PromptReader : BaseReader{
  protected:
-  ros::Subscriber sub_v, sub_lv, sub_h;
-  geometry_msgs::Twist state_v, state_lv;
+  ros::Subscriber sub_v, sub_lv, sub_h, sub_relative_vel;
+  geometry_msgs::Twist state_v, state_lv, state_relative_vel;
   std_msgs::Float64 state_h;
 
  public:
@@ -61,6 +69,8 @@ class PromptReader : BaseReader{
   void callback_v(const geometry_msgs::Twist& v_msg);
 
   void callback_lv(const geometry_msgs::Twist& lv_msg);
+  
+  void callback_relative_vel(const geometry_msgs::Twist& rv_msg);
 
   void callback_h(const std_msgs::Float64& h_msg);
 
