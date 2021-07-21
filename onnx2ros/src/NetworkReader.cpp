@@ -101,7 +101,7 @@ void PromptReader::publish() {
   //nh->getParam("SPEED_SCALE", speed_scale);
   //nh->getParam("HEADWAY_SCALE", headway_scale);
  
-  ROS_INFO_STREAM("Current velocity of Ego: "<<state_v.linear.x);	
+  //ROS_INFO_STREAM("Current velocity of Ego: "<<state_v.linear.x);	
 
   float v = 0;
   float lv = 0;
@@ -111,14 +111,14 @@ void PromptReader::publish() {
   {
   	lv = (float) state_lv.linear.x / SPEED_SCALE;
   }else{
-          ROS_INFO_STREAM("Current relative_velocity of leader: "<<state_relative_vel.linear.z);	
+//          ROS_INFO_STREAM("Current relative_velocity of leader: "<<state_relative_vel.linear.z);	
 	  float relative_vel = (float) state_relative_vel.linear.z;
 	  lv = relative_vel + (float) state_v.linear.x;
-          ROS_INFO_STREAM("Estimated velocity of leader: "<< lv);	
+ //         ROS_INFO_STREAM("Estimated velocity of leader: "<< lv);	
 	  lv = lv/SPEED_SCALE;
   }
 
-  ROS_INFO_STREAM("Space gap is "<<state_h.data);
+  //ROS_INFO_STREAM("Space gap is "<<state_h.data);
   float h = (float) state_h.data / HEADWAY_SCALE;
   std::vector<float> input_values(input_shapes[0][1]);
   input_values[0] = v;
