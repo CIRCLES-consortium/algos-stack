@@ -30,7 +30,7 @@ double BaseReader::forward(std::vector<float> input_values) {
       input_values.data(), input_values.size(), input_shapes[0]));
   auto output_tensors = session.Run(input_names, input_tensors, output_names);
   const auto *output_values = output_tensors[0].GetTensorData<float>();
-  ROS_INFO("%.8f %.8f %.8f > %.8f", input_values[0], input_values[1], input_values[2], output_values[0]);
+  //ROS_INFO("%.8f %.8f %.8f > %.8f", input_values[0], input_values[1], input_values[2], output_values[0]);
   return output_values[0];
 }
 
