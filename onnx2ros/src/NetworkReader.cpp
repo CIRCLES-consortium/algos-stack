@@ -88,6 +88,8 @@ PromptReader::PromptReader(ros::NodeHandle *nh, std::string onnx_model):
   ROS_INFO_STREAM("T Parameter is :"<<T_param);
 }
 
+void PromptReader::callback_467(const geometry_msgs::Point& v_467) {set_point467 = v_467;}
+
 void PromptReader::callback_v(const geometry_msgs::Twist& v_msg) {state_v = v_msg;}
 
 void PromptReader::callback_lv(const geometry_msgs::Twist& lv_msg) {state_lv = lv_msg;}
@@ -125,13 +127,21 @@ void PromptReader::publish() {
   input_values[1] = lv;
   input_values[2] = h;
 
-  geometry_msgs::Twist delta_v;
-  delta_v.linear.x = PromptReader::forward(input_values);
-	
+  geometry_msgs::Twist delta_v; //delta_v is acceleration here
+  delta_v.linear.x = PromptReader::forward(input_values); //this one gives acceleration
+
+  double set_point = set_point467.x;
+
+  // This logic comes after discussion with Eugene
+  if(state_v.linear.x > set_point)
+  {
+	delta_v.linear.x = 0;
+  }
+
   if (use_accel_predict)
   {
-	  delta_v.linear.z = delta_v.linear.x;
-	  delta_v.linear.x = T_param*delta_v.linear.x + state_v.linear.x; 
+	  delta_v.linear.z = delta_v.linear.x;  // save acceleration to z component 
+	  delta_v.linear.x = T_param*delta_v.linear.x + state_v.linear.x; /// in x-component we write new commanded velocity 
   }
-  pub.publish(delta_v);
+  pub.publish(delta_v); // delta_v has x component of linear as commanded velocity and z component of linear as acceleration
 }

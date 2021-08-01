@@ -8,6 +8,7 @@
 #include <message_filters/sync_policies/approximate_time.h>
 #include <geometry_msgs/TwistStamped.h>
 #include <geometry_msgs/Twist.h>
+#include <geometry_msgs/Point.h>
 #include <std_msgs/Float64.h>
 
 #include <algorithm>
@@ -60,14 +61,17 @@ class SynchronousReader : BaseReader{
 
 class PromptReader : BaseReader{
  protected:
-  ros::Subscriber sub_v, sub_lv, sub_h, sub_relative_vel;
+  ros::Subscriber sub_v, sub_lv, sub_h, sub_relative_vel, sub_467;
   geometry_msgs::Twist state_v, state_lv, state_relative_vel;
   std_msgs::Float64 state_h;
+  geometry_msgs::Point set_point467; 
 
  public:
   PromptReader(ros::NodeHandle *nh, std::string onnx_model);
 
   void callback_v(const geometry_msgs::Twist& v_msg);
+  
+  void callback_467(const geometry_msgs::Point& v_467);
 
   void callback_lv(const geometry_msgs::Twist& lv_msg);
   
