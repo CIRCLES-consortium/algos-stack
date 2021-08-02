@@ -71,6 +71,7 @@ PromptReader::PromptReader(ros::NodeHandle *nh, std::string onnx_model):
   sub_lv = nh->subscribe("leader_vel", 1, &PromptReader::callback_lv, this);
   sub_relative_vel = nh->subscribe(relative_vel_topic, 1, &PromptReader::callback_relative_vel, this);
   sub_h = nh->subscribe(headway_topic, 1, &PromptReader::callback_h, this);
+  sub_467 = nh->subscribe("msg_467", 1, &PromptReader::callback_467, this);;
 
 
   ROS_INFO_STREAM("ego vel topic: "<< ego_vel_topic);
@@ -135,7 +136,12 @@ void PromptReader::publish() {
   // This logic comes after discussion with Eugene
   if(state_v.linear.x > set_point)
   {
+	ROS_INFO_STREAM("Setting Predicted Acceleration to Zero");
 	delta_v.linear.x = 0;
+  }
+  else
+  {
+	ROS_INFO_STREAM("Using RL Predicted Acceleration");
   }
 
   if (use_accel_predict)
