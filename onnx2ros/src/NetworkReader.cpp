@@ -131,7 +131,8 @@ void PromptReader::publish() {
   geometry_msgs::Twist delta_v; //delta_v is acceleration here
   delta_v.linear.x = PromptReader::forward(input_values); //this one gives acceleration
 
-  double set_point = set_point467.x;
+  double set_point = set_point467.y;
+  set_point = set_point * 0.2777777;
 
   // This logic comes after discussion with Eugene
   if(state_v.linear.x > set_point)
