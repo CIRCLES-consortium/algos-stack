@@ -137,14 +137,14 @@ void PromptReader::publish() {
   // This logic comes after discussion with Eugene
   if(state_v.linear.x > set_point)
   {
-	ROS_INFO_STREAM("Setting Predicted Acceleration to Zero");
+//	ROS_INFO_STREAM("Setting Predicted Acceleration to Zero");
 	delta_v.linear.x = 0;
   }
-  else
+/*  else
   {
 	ROS_INFO_STREAM("Using RL Predicted Acceleration");
   }
-
+*/
   if (use_accel_predict)
   {
 	  delta_v.linear.z = delta_v.linear.x;  // save acceleration to z component 
