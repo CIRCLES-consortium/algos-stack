@@ -113,7 +113,9 @@ void PromptReader::publish() {
   if(use_leadvel) 
   {
   	lv = (float) state_lv.linear.x / SPEED_SCALE;
-  }else{
+  }
+  else
+  {
 //          ROS_INFO_STREAM("Current relative_velocity of leader: "<<state_relative_vel.linear.z);	
 	  float relative_vel = (float) state_relative_vel.linear.z;
 	  lv = relative_vel + (float) state_v.linear.x;
@@ -148,7 +150,14 @@ void PromptReader::publish() {
   if (use_accel_predict)
   {
 	  delta_v.linear.z = delta_v.linear.x;  // save acceleration to z component 
-	  delta_v.linear.x = T_param*delta_v.linear.x + state_v.linear.x; /// in x-component we write new commanded velocity 
+	  delta_v.linear.x = T_param*delta_v.linear.x + state_v.linear.x; /// in x-component we write new commanded velocity
+  }
+
+  // if we are estimating leader's velocity, the publish the estimated leader velocity on y component of v_des linear component. Added on Thursday, August 5, 2021 at 09:54 Nashville Time
+  if(!use_leadvel)
+  {
+
+	  delta_v.linear.y = lv;
   }
   pub.publish(delta_v); // delta_v has x component of linear as commanded velocity and z component of linear as acceleration
 }
