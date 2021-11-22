@@ -10,6 +10,7 @@
 #include <geometry_msgs/Twist.h>
 #include <geometry_msgs/Point.h>
 #include <std_msgs/Float64.h>
+#include <nav_msgs/Odometry.h>
 
 #include <algorithm>
 #include <iostream>
@@ -32,9 +33,13 @@ class BaseReader{
   std::string ego_vel_topic;
   std::string headway_topic;
   std::string relative_vel_topic;
-  
+  std::string ego_odom_topic;
+  std::string leader_odom_topic;
+
   bool use_leadvel;
   bool use_accel_predict;
+  bool use_setpoint;
+  bool use_odom;
 
  public:
   BaseReader(ros::NodeHandle *nh, std::string onnx_model);
@@ -61,10 +66,14 @@ class SynchronousReader : BaseReader{
 
 class PromptReader : BaseReader{
  protected:
-  ros::Subscriber sub_v, sub_lv, sub_h, sub_relative_vel, sub_467;
+  ros::Subscriber sub_v, sub_lv, sub_h, sub_relative_vel, sub_467, sub_eo, sub_lo;
   geometry_msgs::Twist state_v, state_lv, state_relative_vel;
   std_msgs::Float64 state_h;
-  geometry_msgs::Point set_point467; 
+  geometry_msgs::Point set_point467;
+
+  nav_msgs::Odometry state_ego, state_leader;
+
+
 
  public:
   PromptReader(ros::NodeHandle *nh, std::string onnx_model);
@@ -78,6 +87,10 @@ class PromptReader : BaseReader{
   void callback_relative_vel(const geometry_msgs::Twist& rv_msg);
 
   void callback_h(const std_msgs::Float64& h_msg);
+  
+  void callback_lead_odom(const nav_msgs::Odometry& eo_msg);
+  
+  void callback_ego_odom(const nav_msgs::Odometry& lo_msg);
 
   void publish();
 };
