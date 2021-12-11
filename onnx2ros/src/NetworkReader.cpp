@@ -122,7 +122,7 @@ void PromptReader::callback_h(const std_msgs::Float64& h_msg) {state_h = h_msg;}
 
 void PromptReader::callback_lead_odom(const nav_msgs::Odometry& eo_msg) {state_ego = eo_msg;}
 
-void PromptReader::callback_ego_odom(const nav_msgs::Odometry& lo_msg) {state_leader = lo_msg; ROS_INFO_STREAM("Leader X:="<<state_leader.pose.pose.position.x); }
+void PromptReader::callback_ego_odom(const nav_msgs::Odometry& lo_msg) {state_leader = lo_msg;}
 void PromptReader::publish() {
     //float speed_scale, headway_scale;
     //nh->getParam("SPEED_SCALE", speed_scale);
@@ -153,6 +153,8 @@ void PromptReader::publish() {
     if(use_odom)
     {
         ROS_INFO_STREAM("We are using odometry data to calculate the space gap between vehicles");
+        ROS_INFO_STREAM("LEADER X:="<<state_leader.pose.pose.position.x);
+        ROS_INFO_STREAM("EGO X:="<<state_ego.pose.pose.position.x);
         float space_gap  = sqrt(  pow(state_leader.pose.pose.position.x - state_ego.pose.pose.position.x, 2) + pow(state_leader.pose.pose.position.y - state_ego.pose.pose.position.y, 2) );
         ROS_INFO_STREAM("space gap = "<<space_gap);
         space_gap = space_gap - 4.5; // Subtract vehicle length
