@@ -27,14 +27,14 @@ BaseReader::BaseReader(ros::NodeHandle *nh, std::string onnx_model):
         nh->param("use_accel_predict", use_accel_predict, false); 
         nh->param("use_setpoint", use_setpoint, true);
 
-        ROS_INFO_STREAM("ego_vel_topic"<<ego_vel_topic);
-        ROS_INFO_STREAM("relative_vel_topic"<<relative_vel_topic);
-        ROS_INFO_STREAM("ego_odom_topic"<<ego_odom_topic);
-        ROS_INFO_STREAM("leader_odom_topic"<<leader_odom_topic);
-        ROS_INFO_STREAM("headway_topic"<<headway_topic);
-        ROS_INFO_STREAM("use_lead_vel"<<use_leadvel);
-        ROS_INFO_STREAM("use_odom"<<use_odom);
-        ROS_INFO_STREAM("use_accel_predict"<<use_accel_predict);
+        ROS_INFO_STREAM("ego_vel_topic: "<<ego_vel_topic);
+        ROS_INFO_STREAM("relative_vel_topic: "<<relative_vel_topic);
+        ROS_INFO_STREAM("ego_odom_topic: "<<ego_odom_topic);
+        ROS_INFO_STREAM("leader_odom_topic: "<<leader_odom_topic);
+        ROS_INFO_STREAM("headway_topic: "<<headway_topic);
+        ROS_INFO_STREAM("use_lead_vel: "<<use_leadvel);
+        ROS_INFO_STREAM("use_odom: "<<use_odom);
+        ROS_INFO_STREAM("use_accel_predict: "<<use_accel_predict);
     }
 
 double BaseReader::forward(std::vector<float> input_values) {
@@ -140,7 +140,7 @@ void PromptReader::publish() {
     }
     else
     {
-        //          ROS_INFO_STREAM("Current relative_velocity of leader: "<<state_relative_vel.linear.z);	
+        //ROS_INFO_STREAM("Current relative_velocity of leader: "<<state_relative_vel.linear.z);	
         float relative_vel = (float) state_relative_vel.linear.z;
         lv = relative_vel + (float) state_v.linear.x;
         //         ROS_INFO_STREAM("Estimated velocity of leader: "<< lv);	
@@ -152,11 +152,11 @@ void PromptReader::publish() {
     float h = 0;
     if(use_odom)
     {
-        ROS_INFO_STREAM("We are using odometry data to calculate the space gap between vehicles");
-        ROS_INFO_STREAM("LEADER X:="<<state_leader.pose.pose.position.x);
-        ROS_INFO_STREAM("EGO X:="<<state_ego.pose.pose.position.x);
+        //ROS_INFO_STREAM("We are using odometry data to calculate the space gap between vehicles");
+        //ROS_INFO_STREAM("LEADER X:="<<state_leader.pose.pose.position.x);
+        //ROS_INFO_STREAM("EGO X:="<<state_ego.pose.pose.position.x);
         float space_gap  = sqrt(  pow(state_leader.pose.pose.position.x - state_ego.pose.pose.position.x, 2) + pow(state_leader.pose.pose.position.y - state_ego.pose.pose.position.y, 2) );
-        ROS_INFO_STREAM("space gap = "<<space_gap);
+        //ROS_INFO_STREAM("space gap = "<<space_gap);
         space_gap = space_gap - 4.5; // Subtract vehicle length
         h = (float) space_gap / HEADWAY_SCALE;
     }
