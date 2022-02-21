@@ -197,12 +197,5 @@ void PromptReader::publish() {
         delta_v.linear.y = lv;
     }
 
-    bool executeval = false;
-
-    ros::param::get("/execute", executeval);
-
-    if(executeval)
-    {
-        pub.publish(delta_v); // delta_v has x component of linear as commanded velocity and z component of linear as acceleration
-    }
+    pub.publish(delta_v); // delta_v has x component of linear as commanded velocity and z component of linear as acceleration
 }
