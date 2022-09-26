@@ -7,7 +7,8 @@ int main(int argc, char **argv){
   nh.getParam("model", onnx_model);
   PromptReader reader = PromptReader(&nh, onnx_model);
 
-  ros::Rate rate(20);
+  // JMS changed to 10Hz for MVT
+  ros::Rate rate(10);
   ros::Duration(1.0).sleep();
   while (ros::ok()){
     ros::spinOnce();
