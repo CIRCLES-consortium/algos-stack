@@ -39,8 +39,8 @@ class BaseReader{
 
 class SynchronousReader : BaseReader{
  protected:
-  message_filters::Subscriber<geometry_msgs::TwistStamped> sub_v, sub_lv, sub_sg;
-  typedef message_filters::sync_policies::ApproximateTime<geometry_msgs::TwistStamped, geometry_msgs::TwistStamped, geometry_msgs::TwistStamped> ApproxSyncPolicy;
+  message_filters::Subscriber<std_msgs::Float64> sub_v, sub_lv, sub_sg;
+  typedef message_filters::sync_policies::ApproximateTime<std_msgs::Float64, std_msgs::Float64, std_msgs::Float64> ApproxSyncPolicy;
   typedef message_filters::Synchronizer<ApproxSyncPolicy> ApproxSynchronizer;
   boost::shared_ptr<ApproxSynchronizer> sync_ptr;
 
@@ -48,15 +48,15 @@ class SynchronousReader : BaseReader{
   SynchronousReader(ros::NodeHandle *nh, std::string onnx_model);
 
   void callback(
-      const geometry_msgs::TwistStampedConstPtr& v_msg,
-      const geometry_msgs::TwistStampedConstPtr& lv_msg,
-      const geometry_msgs::TwistStampedConstPtr& sg_msg);
+      const std_msgs::Float64ConstPtr& v_msg,
+      const std_msgs::Float64ConstPtr& lv_msg,
+      const std_msgs::Float64ConstPtr& sg_msg);
 };
 
 class PromptReader : BaseReader{
  protected:
   ros::Subscriber sub_v, sub_lv, sub_sg, sub_gap_setting, sub_speed_setting;
-  geometry_msgs::Twist state_v, state_lv;
+  std_msgs::Float64 state_v, state_lv;
   std_msgs::Float64 state_sg;
   std_msgs::Int16 gap_setting, speed_setting;
   // TODO read in length of this as a parameter, default len 10
@@ -65,9 +65,9 @@ class PromptReader : BaseReader{
  public:
   PromptReader(ros::NodeHandle *nh, std::string onnx_model);
 
-  void callback_v(const geometry_msgs::Twist& v_msg);
+  void callback_v(const std_msgs::Float64& v_msg);
 
-  void callback_lv(const geometry_msgs::Twist& lv_msg);
+  void callback_lv(const std_msgs::Float64& lv_msg);
 
   void callback_sg(const std_msgs::Float64& sg_msg);
   
