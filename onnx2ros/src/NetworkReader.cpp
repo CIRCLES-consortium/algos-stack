@@ -21,6 +21,14 @@ BaseReader::BaseReader(ros::NodeHandle *nh, std::string onnx_model):
   {
     nh->setParam("SPACEGAP_SCALE", 100.0 );
   }
+  if( !(nh->hasParam("SP_TARGET_SPEED")) )
+  {
+      nh->setParam("SP_TARGET_SPEED", -1);
+  }
+  if( !(nh->hasParam("SP_MAX_HEADWAY")) )
+  {
+      nh->setParam("SP_MAX_HEADWAY", -1);
+  }
 }
 
 std::vector<float> BaseReader::forward(std::vector<float> input_values) {
@@ -144,6 +152,8 @@ PromptReader::PromptReader(ros::NodeHandle *nh, std::string onnx_model):
   sub_lv = nh->subscribe("rel_vel", 10, &PromptReader::callback_lv, this);
   // TODO fix as lead distance
   sub_sg = nh->subscribe("lead_dist", 10, &PromptReader::callback_sg, this);
+  
+  
   state_lead_vehicle_history.resize(10);
 }
 
@@ -153,11 +163,21 @@ void PromptReader::callback_lv(const std_msgs::Float64& lv_msg) {state_lv = lv_m
 
 void PromptReader::callback_sg(const std_msgs::Float64& sg_msg) {state_sg = sg_msg;}
 
+void PromptReader::callback_gap_setting(const std_msgs::Int16& gap_setting_msg ) { state_gap_setting = gap_setting_msg; }
+
+void PromptReader::callback_speed_setting(const std_msgs::Int16& speed_setting_msg ) { state_speed_setting = speed_setting_msg; }
+
+
 void PromptReader::publish() {
-  float speed_scale, spacegap_scale;
+  float speed_scale, spacegap_scale, sp_target_speed, sp_max_headway;
+  float max_headway_scale = 1.0f;
+  float gap_setting_scale = 3.0f;
   float lead_vehicle_history[10];
   nh->getParam("SPEED_SCALE", speed_scale);
   nh->getParam("SPACEGAP_SCALE", spacegap_scale);
+  nh->getParam("SP_TARGET_SPEED", sp_target_speed);
+  ng->getParam("SP_MAX_HEADWAY", sp_max_headway);
+  
   float v = (float) state_v.data; // / speed_scale;
   float lv = (float) state_lv.data; // / speed_scale;
   float sg = (float) state_sg.data; // / spacegap_scale;
@@ -183,18 +203,33 @@ void PromptReader::publish() {
       lead_vehicle_history[i] = state_lead_vehicle_history[9-i];
   }
   
-  
   // HACK HACK HACK
   for( int i=3; i<3+10; i++)
   {
       input_values[i] = lead_vehicle_history[i-3];
   }
+  
+  // only pass these values on to the onnx model if the value of target speed is valid: aka, > 0
+  // HACK decide if we want an epsilon here to embrace -0.0f
+  if( ! (sp_target_speed < 0) )
+  {
+      // target speed
+      input_values[13] = sp_target_speed / speed_scale;
+      // max headway
+      input_values[14] = sp_max_headway / max_headway_scale;
+      // current speed setpoint
+      input_values[15] = (float)state_speed_setting.data / (float)speed_scale;
+      // current gap setting setpoint
+      input_values[16] =  (float)state_gap_setting.data / (float)gap_setting_scale;
+      
+  }
 
   std::cout << "input_value==" ;
   for( int i=0; i< input_values.size(); i++ )
-{
-	std::cout << input_values[i] << ",";
-}
+  {
+    std::cout << input_values[i] << ",";
+  }
+
 
   std_msgs::Int16 target_gap_setting;
   std_msgs::Int16 target_speed_setting;

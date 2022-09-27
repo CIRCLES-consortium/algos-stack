@@ -58,7 +58,7 @@ class PromptReader : BaseReader{
   ros::Subscriber sub_v, sub_lv, sub_sg, sub_gap_setting, sub_speed_setting;
   std_msgs::Float64 state_v, state_lv;
   std_msgs::Float64 state_sg;
-  std_msgs::Int16 gap_setting, speed_setting;
+  std_msgs::Int16 state_gap_setting, state_speed_setting;
   // TODO read in length of this as a parameter, default len 10
   std::vector<double> state_lead_vehicle_history;
 
