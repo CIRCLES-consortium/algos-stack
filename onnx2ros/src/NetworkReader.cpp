@@ -11,8 +11,16 @@ BaseReader::BaseReader(ros::NodeHandle *nh, std::string onnx_model):
   output_names = session.GetOutputNames();
   input_shapes = session.GetInputShapes();
   input_shapes[0][0] = 1;
-  nh->setParam("SPEED_SCALE", 1.0);
-  nh->setParam("SPACEGAP_SCALE", 1.0);
+//  nh->setParam("SPEED_SCALE", 1.0);
+//  nh->setParam("SPACEGAP_SCALE", 1.0);
+  if ( !(nh->hasParam("SPEED_SCALE")) )
+  {
+    nh->setParam("SPEED_SCALE", 40.0);
+  }
+  if ( !(nh->hasParam("SPACEGAP_SCALE")) ) 
+  {
+    nh->setParam("SPACEGAP_SCALE", 100.0 );
+  }
 }
 
 std::vector<float> BaseReader::forward(std::vector<float> input_values) {
@@ -150,21 +158,22 @@ void PromptReader::publish() {
   float lead_vehicle_history[10];
   nh->getParam("SPEED_SCALE", speed_scale);
   nh->getParam("SPACEGAP_SCALE", spacegap_scale);
-  float v = (float) state_v.data / speed_scale;
-  float lv = (float) state_lv.data / speed_scale;
-  float sg = (float) state_sg.data / spacegap_scale;
+  float v = (float) state_v.data; // / speed_scale;
+  float lv = (float) state_lv.data; // / speed_scale;
+  float sg = (float) state_sg.data; // / spacegap_scale;
   int i=0;
   std::vector<float> input_values(input_shapes[0][1]);
-  input_values[0] = v;
+  input_values[0] = (float)(v/speed_scale);
   if ( sg >= 250 ) {
 	// HACK: fix this based on desired inputs of the RL designers
-	input_values[1] = lv+v+5;
-  	input_values[2] = 252;
+	input_values[1] = (float)((lv+v+5)/speed_scale);
+  	input_values[2] = (float)(252/spacegap_scale);
   }
   else {
-  	input_values[1] = lv+v;
-  	input_values[2] = sg;
+  	input_values[1] = (float)((lv+v)/speed_scale);
+  	input_values[2] = (float)(sg/spacegap_scale);
   }
+  
   // HACK need to add this logic to the callback
   // remove the last element
   state_lead_vehicle_history.erase(state_lead_vehicle_history.begin());
