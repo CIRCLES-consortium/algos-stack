@@ -39,7 +39,7 @@ class BaseReader{
 
 class SynchronousReader : BaseReader{
  protected:
-  message_filters::Subscriber<std_msgs::Float64> sub_v, sub_lv, sub_sg;
+  message_filters::Subscriber<std_msgs::Float64> sub_v, sub_lv, sub_sg, sub_sss, sub_sgs;
   typedef message_filters::sync_policies::ApproximateTime<std_msgs::Float64, std_msgs::Float64, std_msgs::Float64> ApproxSyncPolicy;
   typedef message_filters::Synchronizer<ApproxSyncPolicy> ApproxSynchronizer;
   boost::shared_ptr<ApproxSynchronizer> sync_ptr;

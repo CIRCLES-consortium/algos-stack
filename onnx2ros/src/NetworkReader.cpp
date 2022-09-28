@@ -152,7 +152,8 @@ PromptReader::PromptReader(ros::NodeHandle *nh, std::string onnx_model):
   sub_lv = nh->subscribe("rel_vel", 10, &PromptReader::callback_lv, this);
   // TODO fix as lead distance
   sub_sg = nh->subscribe("lead_dist", 10, &PromptReader::callback_sg, this);
-  
+  sub_speed_setting = nh->subscribe("acc/set_speed", 10, &PromptReader::callback_speed_setting, this);
+  sub_gap_setting = nh->subscribe("acc/distance_setting", 10, &PromptReader::callback_gap_setting, this);
   
   state_lead_vehicle_history.resize(10);
 }
@@ -176,7 +177,7 @@ void PromptReader::publish() {
   nh->getParam("SPEED_SCALE", speed_scale);
   nh->getParam("SPACEGAP_SCALE", spacegap_scale);
   nh->getParam("SP_TARGET_SPEED", sp_target_speed);
-  ng->getParam("SP_MAX_HEADWAY", sp_max_headway);
+  nh->getParam("SP_MAX_HEADWAY", sp_max_headway);
   
   float v = (float) state_v.data; // / speed_scale;
   float lv = (float) state_lv.data; // / speed_scale;
@@ -218,7 +219,7 @@ void PromptReader::publish() {
       // max headway
       input_values[14] = sp_max_headway / max_headway_scale;
       // current speed setpoint
-      input_values[15] = (float)state_speed_setting.data / (float)speed_scale;
+      input_values[15] = (float)(state_speed_setting.data * 0.44704) / ((float)speed_scale);
       // current gap setting setpoint
       input_values[16] =  (float)state_gap_setting.data / (float)gap_setting_scale;
       
