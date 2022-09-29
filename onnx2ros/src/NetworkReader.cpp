@@ -1,6 +1,9 @@
 #include "NetworkReader.h"
 
 #include <utility>
+#include <algorithm>
+
+#define clamp(value,floor,cieling) std::max(std::min((float)value,(float)cieling),(float)floor)
 
 BaseReader::BaseReader(ros::NodeHandle *nh, std::string onnx_model):
     nh(nh),
@@ -38,42 +41,79 @@ std::vector<float> BaseReader::forward(std::vector<float> input_values) {
       input_values.data(), input_values.size(), input_shapes[0]));
   auto output_tensors = session.Run(input_names, input_tensors, output_names);
   // work to do to fix the output values to what we want
+  std::vector< std::vector<int64_t> > output_shape = session.GetOutputShapes();
+  // since the output model will be always of size 1, the only difference
+  // of what we do is the size of the [0]th element 
   const auto *output_values = output_tensors[0].GetTensorData<float>();
-  std::cout << "Received result: ";
+  std::stringstream str_log;
+  std::stringstream input_stream;
+  std::stringstream output_stream;
+  str_log << "output_names.size() = " << output_names.size() << ", " << output_names[0] <<  std::endl;
+  str_log << "The output_shape container has output_shape.size()==" << output_shape.size() << std::endl;
+  str_log << "output_shape[0].size() == " << output_shape[0].size() << ") ";
+  str_log << "The output from the onnxmodel.Run (with output_shape[0][1] == " << output_shape[0][1] << ") ";
   // HACK HACK HACK
-  for( int i=0; i<64; i++ )
+  for( int i=0; i<output_shape[0][1]; i++ )
   {
       float val=0;
       val = output_values[i];
       result.push_back(val);
-      std::cout << val << ", ";
+      str_log << val;
+      output_stream << val;
+      if( i < output_shape[0][1] - 1 )
+      {
+	output_stream  << ", ";
+        str_log << ", ";
+      }
   }
-  std::cout << std::endl;
-  ROS_INFO("%.8f %.8f %.8f > %.8f", input_values[0], input_values[1], input_values[2], output_values[0]);
+  str_log << std::endl;
+
+  for( int i=0; i<input_values.size(); i++ )
+  {
+    input_stream << input_values[i];
+    if( i < input_values.size() - 1 )
+    {
+       input_stream << ", ";
+    }
+  }
+
+//  ROS_INFO("%.8f %.8f %.8f > %.8f", input_values[0], input_values[1], input_values[2], output_values[0]);
+  //ROS_INFO(str_log.str().c_str());
+  ROS_INFO("[ %s ] = onnx.Run( %s )", output_stream.str().c_str(), input_stream.str().c_str() );
+  str_log.clear();
+  
   return result;
 }
 
 // don't forget to credit Nathan for writing this pseudocode
 int BaseReader::getTargetGapSettingFromTensor(std::vector<float> speedTensors)
 {
-       // find argmax of gap setting logits (indexes 61 to 64 excluded)
-       int gap_action = 61;
-       float max_gap_logit = speedTensors[gap_action];
-       for (int i = 62; i < 64; ++i) {
-           if (speedTensors[i] > max_gap_logit) {
-               gap_action = i;
-               max_gap_logit = speedTensors[i];
-           }
+	int gap_setting=4;
+       if (speedTensors.size() == 2) {
+        // continuous actions output
+        float gap_action = clamp(speedTensors[1], -1.0f, 1.0f);
+        gap_setting = gap_action > (1.0f / 3.0f) ? 1 : gap_action > (-1.0f / 3.0f) ? 2 : 3;
+       } else {
+         // discrete actions output
+         // find argmax of gap setting logits (indexes 61 to 64 excluded)
+         int gap_action = 61;
+         float max_gap_logit = speedTensors[gap_action];
+         for (int i = 62; i < 64; ++i) {
+             if (speedTensors[i] > max_gap_logit) {
+                 gap_action = i;
+                 max_gap_logit = speedTensors[i];
+             }
+         }
+      
+         // convert discrete actions to respective settings
+         // in mph
+         gap_setting = gap_action - 60;
        }
-    
-       // convert discrete actions to respective settings
-       // in mph
-       int gap_setting = gap_action - 60;
-
        return gap_setting;
 }
 
-int BaseReader::getTargetSpeedFromTensor(std::vector<float> speedTensors)
+int BaseReader::getTargetSpeedFromTensor(std::vector<float> speedTensors,
+	float ego_v, float lead_veh_v, float lead_veh_distance)
 {
    /**
     * Get RL controller acceleration.
@@ -88,6 +128,15 @@ int BaseReader::getTargetSpeedFromTensor(std::vector<float> speedTensors)
  
     * @return AV acceleration in m/s/s
     */
+	int speed_setting = 0;
+
+      if (speedTensors.size() == 2) {
+        // continuous actions output
+        float speed_action = clamp(speedTensors[0], -1.0f, 1.0f);
+        speed_setting = (speed_action + 1.0f) * 40.0f / 0.44704f;
+        speed_setting = static_cast<int>(clamp(speed_setting, 20.0f, 80.0f));
+      } else {
+       // discrete actions output
        // find argmax of speed setting logits (indexes 0 to 61 excluded)
        int speed_action = 0;
        float max_speed_logit = speedTensors[0];
@@ -97,11 +146,22 @@ int BaseReader::getTargetSpeedFromTensor(std::vector<float> speedTensors)
                max_speed_logit = speedTensors[i];
            }
        }
-    
+
        // convert discrete actions to respective settings
        // in mph
-       int speed_setting = speed_action + 20;
+       speed_setting = speed_action + 20;
+      }
 
+      // apply gap closing and failsafe
+      // TODO(JMS): check vars this_vel, lead_vel, headway
+      const float gap_closing_threshold = std::max(160.0f, 6.0f * ego_v);
+      const float failsafe_threshold = 6.0f * ((ego_v + 1.0f + ego_v * 4.0f / 30.0f) - lead_veh_v);
+      if (lead_veh_distance > gap_closing_threshold) {
+        speed_setting = 80;
+      }
+      else if (lead_veh_distance< failsafe_threshold) {
+        speed_setting = 20;
+      }
        return speed_setting;
 }
 
@@ -225,18 +285,20 @@ void PromptReader::publish() {
       
   }
 
-  std::cout << "input_value==" ;
-  for( int i=0; i< input_values.size(); i++ )
-  {
-    std::cout << input_values[i] << ",";
-  }
+  //std::cout << "input_value==" ;
+  //for( int i=0; i< input_values.size(); i++ )
+  //{
+  //  std::cout << input_values[i] << ",";
+  //}
+  //std::cout << std::endl;
 
 
   std_msgs::Int16 target_gap_setting;
   std_msgs::Int16 target_speed_setting;
   std::vector<float> result = PromptReader::forward(input_values);
   target_gap_setting.data = PromptReader::getTargetGapSettingFromTensor(result);
-  target_speed_setting.data = PromptReader::getTargetSpeedFromTensor(result);
+  target_speed_setting.data = PromptReader::getTargetSpeedFromTensor(result,v,lv,sg);
+  ROS_INFO("Publishing gap=%d, speed=%d", target_gap_setting, target_speed_setting);
   pub_gap.publish(target_gap_setting);
   pub_speed.publish(target_speed_setting);
 }

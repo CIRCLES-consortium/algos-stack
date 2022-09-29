@@ -30,7 +30,7 @@ class BaseReader{
 
  public:
   BaseReader(ros::NodeHandle *nh, std::string onnx_model);
-  int getTargetSpeedFromTensor(std::vector<float> onnxResult);
+  int getTargetSpeedFromTensor(std::vector<float> onnxResult, float ego_v, float lead_veh_v, float lead_veh_distance);
   int getTargetGapSettingFromTensor(std::vector<float> onnxResult);
   
   std::vector<float> forward(std::vector<float> input_values);

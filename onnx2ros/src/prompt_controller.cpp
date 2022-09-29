@@ -6,7 +6,7 @@ int main(int argc, char **argv){
   std::string onnx_model;
   nh.getParam("model", onnx_model);
   PromptReader reader = PromptReader(&nh, onnx_model);
-
+  ROS_INFO("Loading ONNX network, name=%s", onnx_model.c_str());
   // JMS changed to 10Hz for MVT
   ros::Rate rate(10);
   ros::Duration(1.0).sleep();
