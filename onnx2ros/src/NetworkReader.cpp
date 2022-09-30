@@ -20,10 +20,6 @@ BaseReader::BaseReader(ros::NodeHandle *nh, std::string onnx_model):
   {
     nh->setParam("SPEED_SCALE", 40.0);
   }
-  if ( !(nh->hasParam("SPACEGAP_SCALE")) ) 
-  {
-    nh->setParam("SPACEGAP_SCALE", 100.0 );
-  }
   if( !(nh->hasParam("SP_TARGET_SPEED")) )
   {
       nh->setParam("SP_TARGET_SPEED", -1);
@@ -208,21 +204,11 @@ PromptReader::PromptReader(ros::NodeHandle *nh, std::string onnx_model):
   pub_gap = nh->advertise<std_msgs::Int16>("target_gap_setting", 10);
   pub_speed = nh->advertise<std_msgs::Int16>("target_speed_setting", 10);
   sub_v = nh->subscribe("vel", 10, &PromptReader::callback_v, this);
-  // TODO: change lv to rv
-  sub_lv = nh->subscribe("rel_vel", 10, &PromptReader::callback_lv, this);
-  // TODO fix as lead distance
-  sub_sg = nh->subscribe("lead_dist", 10, &PromptReader::callback_sg, this);
   sub_speed_setting = nh->subscribe("acc/set_speed", 10, &PromptReader::callback_speed_setting, this);
   sub_gap_setting = nh->subscribe("acc/distance_setting", 10, &PromptReader::callback_gap_setting, this);
-  
-  state_lead_vehicle_history.resize(10);
 }
 
 void PromptReader::callback_v(const std_msgs::Float64& v_msg) {state_v = v_msg;}
-
-void PromptReader::callback_lv(const std_msgs::Float64& lv_msg) {state_lv = lv_msg;}
-
-void PromptReader::callback_sg(const std_msgs::Float64& sg_msg) {state_sg = sg_msg;}
 
 void PromptReader::callback_gap_setting(const std_msgs::Int16& gap_setting_msg ) { state_gap_setting = gap_setting_msg; }
 
@@ -235,55 +221,34 @@ void PromptReader::publish() {
   float gap_setting_scale = 3.0f;
   float lead_vehicle_history[10];
   nh->getParam("SPEED_SCALE", speed_scale);
-  nh->getParam("SPACEGAP_SCALE", spacegap_scale);
   nh->getParam("SP_TARGET_SPEED", sp_target_speed);
   nh->getParam("SP_MAX_HEADWAY", sp_max_headway);
   
   float v = (float) state_v.data; // / speed_scale;
-  float lv = (float) state_lv.data; // / speed_scale;
-  float sg = (float) state_sg.data; // / spacegap_scale;
   int i=0;
   std::vector<float> input_values(input_shapes[0][1]);
   input_values[0] = (float)(v/speed_scale);
-  if ( sg >= 250 ) {
-	// HACK: fix this based on desired inputs of the RL designers
-	input_values[1] = (float)((lv+v+5)/speed_scale);
-  	input_values[2] = (float)(252/spacegap_scale);
-  }
-  else {
-  	input_values[1] = (float)((lv+v)/speed_scale);
-  	input_values[2] = (float)(sg/spacegap_scale);
-  }
-  
-  // HACK need to add this logic to the callback
-  // remove the last element
-  state_lead_vehicle_history.erase(state_lead_vehicle_history.begin());
-  state_lead_vehicle_history.push_back(input_values[1]); 
-  for( int i=9; i>=0; i-- )
-  {
-      lead_vehicle_history[i] = state_lead_vehicle_history[9-i];
-  }
-  
-  // HACK HACK HACK
-  for( int i=3; i<3+10; i++)
-  {
-      input_values[i] = lead_vehicle_history[i-3];
-  }
-  
+
   // only pass these values on to the onnx model if the value of target speed is valid: aka, > 0
   // HACK decide if we want an epsilon here to embrace -0.0f
   if( ! (sp_target_speed < 0) )
   {
       // target speed
-      input_values[13] = sp_target_speed / speed_scale;
+      input_values[1] = sp_target_speed / speed_scale;
       // max headway
-      input_values[14] = sp_max_headway / max_headway_scale;
-      // current speed setpoint
-      input_values[15] = (float)(state_speed_setting.data * 0.44704) / ((float)speed_scale);
-      // current gap setting setpoint
-      input_values[16] =  (float)state_gap_setting.data / (float)gap_setting_scale;
-      
+      input_values[2] = sp_max_headway / max_headway_scale;
+  } else 
+  {
+      // TODO: establish params or #ifdef for default target speed and max headway
+      // target speed
+      input_values[1] = 30.0 / speed_scale;
+      // max headway
+      input_values[2] = 1.0 / max_headway_scale;
   }
+  // current speed setpoint
+  input_values[3] = max(20,(float)(state_speed_setting.data * 0.44704) / ((float)speed_scale));
+  // current gap setting setpoint
+  input_values[4] =  max(1,((float)state_gap_setting.data / (float)gap_setting_scale));
 
   //std::cout << "input_value==" ;
   //for( int i=0; i< input_values.size(); i++ )
