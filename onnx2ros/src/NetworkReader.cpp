@@ -109,7 +109,7 @@ int BaseReader::getTargetGapSettingFromTensor(std::vector<float> speedTensors)
 }
 
 int BaseReader::getTargetSpeedFromTensor(std::vector<float> speedTensors,
-	float ego_v, float lead_veh_v, float lead_veh_distance)
+	float ego_v )
 {
    /**
     * Get RL controller acceleration.
@@ -148,16 +148,6 @@ int BaseReader::getTargetSpeedFromTensor(std::vector<float> speedTensors,
        speed_setting = speed_action + 20;
       }
 
-      // apply gap closing and failsafe
-      // TODO(JMS): check vars this_vel, lead_vel, headway
-      const float gap_closing_threshold = std::max(160.0f, 6.0f * ego_v);
-      const float failsafe_threshold = 6.0f * ((ego_v + 1.0f + ego_v * 4.0f / 30.0f) - lead_veh_v);
-      if (lead_veh_distance > gap_closing_threshold) {
-        speed_setting = 80;
-      }
-      else if (lead_veh_distance< failsafe_threshold) {
-        speed_setting = 20;
-      }
        return speed_setting;
 }
 
@@ -246,9 +236,9 @@ void PromptReader::publish() {
       input_values[2] = 1.0 / max_headway_scale;
   }
   // current speed setpoint
-  input_values[3] = max(20,(float)(state_speed_setting.data * 0.44704) / ((float)speed_scale));
+  input_values[3] = std::max(20.0f,(float)(state_speed_setting.data * 0.44704) / ((float)speed_scale));
   // current gap setting setpoint
-  input_values[4] =  max(1,((float)state_gap_setting.data / (float)gap_setting_scale));
+  input_values[4] =  std::max(1.0f,((float)state_gap_setting.data / (float)gap_setting_scale));
 
   //std::cout << "input_value==" ;
   //for( int i=0; i< input_values.size(); i++ )
@@ -262,7 +252,7 @@ void PromptReader::publish() {
   std_msgs::Int16 target_speed_setting;
   std::vector<float> result = PromptReader::forward(input_values);
   target_gap_setting.data = PromptReader::getTargetGapSettingFromTensor(result);
-  target_speed_setting.data = PromptReader::getTargetSpeedFromTensor(result,v,lv,sg);
+  target_speed_setting.data = PromptReader::getTargetSpeedFromTensor(result,v);
   ROS_INFO("Publishing gap=%d, speed=%d", target_gap_setting, target_speed_setting);
   pub_gap.publish(target_gap_setting);
   pub_speed.publish(target_speed_setting);
