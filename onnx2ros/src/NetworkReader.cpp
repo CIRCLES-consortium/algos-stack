@@ -236,9 +236,10 @@ void PromptReader::publish() {
       input_values[2] = 1.0 / max_headway_scale;
   }
   // current speed setpoint
-  input_values[3] = std::max(20.0f,(float)(state_speed_setting.data * 0.44704) / ((float)speed_scale));
+  input_values[3] = std::max(-1.0f,(float)(state_speed_setting.data ) / ((float)speed_scale));
+  //input_values[3] = std::max(20.0f,(float)(state_speed_setting.data * 0.44704) / ((float)speed_scale));
   // current gap setting setpoint
-  input_values[4] =  std::max(1.0f,((float)state_gap_setting.data / (float)gap_setting_scale));
+  input_values[4] =  std::max(-1.0f,((float)state_gap_setting.data / (float)gap_setting_scale));
 
   //std::cout << "input_value==" ;
   //for( int i=0; i< input_values.size(); i++ )
