@@ -133,8 +133,8 @@ int BaseReader::getTargetSpeedFromTensor(std::vector<float> speedTensors,
       if (speedTensors.size() == 2) {
         // continuous actions output
         float speed_action = clamp(speedTensors[0], -1.0f, 1.0f);
-        speed_setting = (speed_action + 1.0f) * 40.0f / 0.44704f;
-        speed_setting = static_cast<int>(clamp(speed_setting, 20.0f, 80.0f));
+        speed_action = (speed_action + 1.0f) * 40.0f / 0.44704f;
+        speed_setting = static_cast<int>(clamp(speed_action, 20.0f, 80.0f));
       } else {
        // discrete actions output
        // find argmax of speed setting logits (indexes 0 to 61 excluded)
@@ -298,7 +298,7 @@ void PromptReader::publish() {
   std::vector<float> result = PromptReader::forward(input_values);
   target_gap_setting.data = PromptReader::getTargetGapSettingFromTensor(result);
   target_speed_setting.data = PromptReader::getTargetSpeedFromTensor(result,v,lv,sg);
-  ROS_INFO("Publishing gap=%d, speed=%d", target_gap_setting, target_speed_setting);
+  ROS_INFO("Publishing gap=%d, speed=%d", target_gap_setting.data, target_speed_setting.data);
   pub_gap.publish(target_gap_setting);
   pub_speed.publish(target_speed_setting);
 }
