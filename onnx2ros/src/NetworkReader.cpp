@@ -4,6 +4,14 @@
 #include <algorithm>
 
 #define clamp(value,floor,cieling) std::max(std::min((float)value,(float)cieling),(float)floor)
+/*
+float clamp( float value, float floor, float cieling ) {
+	float result=0.0f;
+	result = std::min( value, cieling );
+	result = std::max( result , floor );
+	return result;
+}
+*/
 
 BaseReader::BaseReader(ros::NodeHandle *nh, std::string onnx_model):
     nh(nh),
@@ -53,6 +61,7 @@ std::vector<float> BaseReader::forward(std::vector<float> input_values) {
   {
       float val=0;
       val = output_values[i];
+      //ROS_INFO("Pushing back result %f", val);
       result.push_back(val);
       str_log << val;
       output_stream << val;
@@ -74,7 +83,7 @@ std::vector<float> BaseReader::forward(std::vector<float> input_values) {
   }
 
 //  ROS_INFO("%.8f %.8f %.8f > %.8f", input_values[0], input_values[1], input_values[2], output_values[0]);
-  //ROS_INFO(str_log.str().c_str());
+  //ROS_INFO("(raw log:) %s", str_log.str().c_str());
   ROS_INFO("[ %s ] = onnx.Run( %s )", output_stream.str().c_str(), input_stream.str().c_str() );
   str_log.clear();
   
@@ -125,12 +134,20 @@ int BaseReader::getTargetSpeedFromTensor(std::vector<float> speedTensors,
     * @return AV acceleration in m/s/s
     */
 	int speed_setting = 0;
+      
+      //ROS_INFO("speedTensors.size()==%d",speedTensors.size());
 
       if (speedTensors.size() == 2) {
         // continuous actions output
+        //ROS_INFO("speedTensors[0]==%f", speedTensors[0]);
         float speed_action = clamp(speedTensors[0], -1.0f, 1.0f);
-        speed_setting = (speed_action + 1.0f) * 40.0f / 0.44704f;
-        speed_setting = static_cast<int>(clamp(speed_setting, 20.0f, 80.0f));
+	//ROS_INFO("clamp(%f,-1.0f,1.0f)",speed_action);
+	// value for speed_action is already in mph
+        //speed_action = (speed_action + 1.0f) * 40.0f / 0.44704f;
+        speed_action = (speed_action + 1.0f) * 40.0f;
+	//ROS_INFO("about to clamp(%f,20.0f,80.0f)",speed_action);
+        speed_setting = static_cast<int>(clamp(speed_action, 20.0, 80.0));
+	//ROS_INFO("result of clamp(%d,20.0f,80.0f)",speed_setting);
       } else {
        // discrete actions output
        // find argmax of speed setting logits (indexes 0 to 61 excluded)
@@ -254,7 +271,7 @@ void PromptReader::publish() {
   std::vector<float> result = PromptReader::forward(input_values);
   target_gap_setting.data = PromptReader::getTargetGapSettingFromTensor(result);
   target_speed_setting.data = PromptReader::getTargetSpeedFromTensor(result,v);
-  ROS_INFO("Publishing gap=%d, speed=%d", target_gap_setting, target_speed_setting);
+  ROS_INFO("Publishing gap=%d, speed=%d", target_gap_setting.data, target_speed_setting.data);
   pub_gap.publish(target_gap_setting);
   pub_speed.publish(target_speed_setting);
 }
