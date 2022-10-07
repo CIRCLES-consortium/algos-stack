@@ -1,0 +1,30 @@
+<launch>
+
+    <arg name="bagfile_name" default="/var/panda/CyverseData/JmscslgroupData/bagfiles/2022_09_28/2022_09_28_00_46_35_2T3Y1RFV8KC014025rl_cruise_planner.bag"/>
+    
+    <node pkg="rosbag" type="play" name="unit_test_playback" args="$(arg bagfile_name) -s 100" />
+
+    <arg name="SPACEGAP_SCALE" default="100.0"/>
+    <arg name="SPEED_SCALE" default="40.0"/>
+    <!-- for planner, set these two to positive values -->
+    <arg name="SP_TARGET_SPEED" default="70"/>
+    <arg name="SP_MAX_HEADWAY" default="1"/>
+
+    <param name="/SPACEGAP_SCALE" value="$(arg SPACEGAP_SCALE)"/>
+    <param name="/SPEED_SCALE" value="$(arg SPEED_SCALE)"/>
+    <param name="/SP_TARGET_SPEED" value="$(arg SP_TARGET_SPEED)"/>
+    <param name="/SP_MAX_HEADWAY" value="$(arg SP_MAX_HEADWAY)"/>
+
+    <param name="model" type="string" value="$(find onnx2ros)/../controllers/rl-blind-cruise-planner.onnx"/>
+    <param name="mode" type="string" value="prompt"/>
+    <param name="v" type="double" value="30.0"/>
+    <param name="lv" type="double" value="10.0"/>
+    <param name="h" type="double" value="50.0"/>
+    <node pkg="onnx2ros" type="prompt_mode" name="controller" output="screen">
+	<remap from="target_gap_setting" to="target_gap_setting_unit_test"/>
+	<remap from="target_speed_setting" to="target_speed_setting_unit_test"/>
+    </node>
+<!--
+    <node pkg="onnx2ros" type="mock_sensors.py" name="sensors" output="screen"/>
+-->
+</launch>
