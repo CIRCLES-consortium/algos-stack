@@ -2,6 +2,7 @@
 
 #include <utility>
 #include <algorithm>
+#include <fstream>
 
 #define clamp(value,floor,cieling) std::max(std::min((float)value,(float)cieling),(float)floor)
 
@@ -80,6 +81,13 @@ std::vector<float> BaseReader::forward(std::vector<float> input_values) {
 //  ROS_INFO("%.8f %.8f %.8f > %.8f", input_values[0], input_values[1], input_values[2], output_values[0]);
   //ROS_INFO(str_log.str().c_str());
   ROS_INFO("[ %s ] = onnx.Run( %s )", output_stream.str().c_str(), input_stream.str().c_str() );
+  // <-- Experimental
+  std::ofstream tempFile("temp.csv");
+  tempFile << output_stream.str().c_str() << "\n";
+  tempFile.close();
+
+  // -->
+
   str_log.clear();
   
   return result;
@@ -302,4 +310,6 @@ void PromptReader::publish() {
   pub_gap.publish(target_gap_setting);
   pub_speed.publish(target_speed_setting);
 }
+
+
 
