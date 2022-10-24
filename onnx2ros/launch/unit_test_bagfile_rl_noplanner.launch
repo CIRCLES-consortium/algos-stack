@@ -16,7 +16,7 @@
     
     <node pkg="rosbag" type="play" name="unit_test_playback" args="$(arg bagfile_name) -s 100" />
 
-    <param name="model" type="string" value="$(find onnx2ros)/../controllers/rl-cruise-noplanner.onnx"/>
+    <param name="model" type="string" value="$(find onnx2ros)/../controllers/RL-cruise-hybrid/rl_acc_blind_sp/model.onnx"/>
     <param name="mode" type="string" value="prompt"/>
     <param name="v" type="double" value="30.0"/>
     <param name="lv" type="double" value="10.0"/>

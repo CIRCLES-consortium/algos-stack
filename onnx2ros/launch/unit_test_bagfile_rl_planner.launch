@@ -15,7 +15,7 @@
     <param name="/SP_TARGET_SPEED" value="$(arg SP_TARGET_SPEED)"/>
     <param name="/SP_MAX_HEADWAY" value="$(arg SP_MAX_HEADWAY)"/>
 
-    <param name="model" type="string" value="$(find onnx2ros)/../controllers/rl-cruise-planner.onnx"/>
+    <param name="model" type="string" value="$(find onnx2ros)/../controllers/RL-cruise-hybrid/rl_acc_blind_sp/model.onnx"/>
     <param name="mode" type="string" value="prompt"/>
     <param name="v" type="double" value="30.0"/>
     <param name="lv" type="double" value="10.0"/>
