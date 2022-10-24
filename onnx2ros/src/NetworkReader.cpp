@@ -2,7 +2,6 @@
 
 #include <utility>
 #include <algorithm>
-#include <fstream>
 
 #define clamp(value,floor,cieling) std::max(std::min((float)value,(float)cieling),(float)floor)
 
@@ -79,15 +78,8 @@ std::vector<float> BaseReader::forward(std::vector<float> input_values) {
   }
 
 //  ROS_INFO("%.8f %.8f %.8f > %.8f", input_values[0], input_values[1], input_values[2], output_values[0]);
-  //ROS_INFO(str_log.str().c_str());
+  // ROS_INFO(str_log.str().c_str());
   ROS_INFO("[ %s ] = onnx.Run( %s )", output_stream.str().c_str(), input_stream.str().c_str() );
-  // <-- Experimental
-  std::ofstream tempFile("temp.csv");
-  tempFile << output_stream.str().c_str() << "\n";
-  tempFile.close();
-
-  // -->
-
   str_log.clear();
   
   return result;
@@ -97,7 +89,8 @@ std::vector<float> BaseReader::forward(std::vector<float> input_values) {
 int BaseReader::getTargetGapSettingFromTensor(std::vector<float> speedTensors)
 {
 	int gap_setting=4;
-       if (speedTensors.size() == 2) {
+       if (true) {
+      //  if (speedTensors.size() == 2) {
         // continuous actions output
         float gap_action = clamp(speedTensors[1], -1.0f, 1.0f);
         gap_setting = gap_action > (1.0f / 3.0f) ? 1 : gap_action > (-1.0f / 3.0f) ? 2 : 3;
@@ -138,7 +131,8 @@ int BaseReader::getTargetSpeedFromTensor(std::vector<float> speedTensors,
     */
 	int speed_setting = 0;
 
-      if (speedTensors.size() == 2) {
+      if (true) {
+      // if (speedTensors.size() == 2) {
         // continuous actions output
         float speed_action = clamp(speedTensors[0], -1.0f, 1.0f);
         speed_action = (speed_action + 1.0f) * 40.0f / 0.44704f;
