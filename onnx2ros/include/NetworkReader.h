@@ -9,6 +9,7 @@
 #include <geometry_msgs/TwistStamped.h>
 #include <geometry_msgs/Twist.h>
 #include <std_msgs/Float64.h>
+#include <std_msgs/Int16.h>
 
 #include <algorithm>
 #include <iostream>
@@ -19,50 +20,38 @@
 class BaseReader{
  protected:
   ros::NodeHandle *nh;
-  ros::Publisher pub;
+  ros::Publisher pub_speed;
+  ros::Publisher pub_gap;
   Ort::Env env;
   Ort::SessionOptions session_options;
-  Ort::Experimental::Session session;
-  std::vector<std::string> input_names, output_names;
-  std::vector<std::vector<int64_t>> input_shapes;
+  Ort::Experimental::Session session_nathan;
+  Ort::Experimental::Session session_kathy;
+  std::vector<std::string> input_names_nathan, output_names_nathan, input_names_kathy, output_names_kathy;
+  std::vector<std::vector<int64_t>> input_shapes_nathan, input_shapes_kathy;
+  std::vector<float> prev_vels, prev_req_vels, prev_accels;
+  ros::Subscriber sub_v, sub_accel, sub_minicar, sub_setspeed, sub_timegap;
+  std_msgs::Float64 state_v, state_accel, state_minicar;
+  std_msgs::Int16 state_setspeed, state_timegap;
 
  public:
-  BaseReader(ros::NodeHandle *nh, std::string onnx_model);
+  BaseReader(ros::NodeHandle *nh, std::string onnx_model_nathan, std::string onnx_model_kathy);
 
-  double forward(std::vector<float> input_values);
-};
-
-
-class SynchronousReader : BaseReader{
- protected:
-  message_filters::Subscriber<geometry_msgs::TwistStamped> sub_v, sub_lv, sub_h;
-  typedef message_filters::sync_policies::ApproximateTime<geometry_msgs::TwistStamped, geometry_msgs::TwistStamped, geometry_msgs::TwistStamped> ApproxSyncPolicy;
-  typedef message_filters::Synchronizer<ApproxSyncPolicy> ApproxSynchronizer;
-  boost::shared_ptr<ApproxSynchronizer> sync_ptr;
-
- public:
-  SynchronousReader(ros::NodeHandle *nh, std::string onnx_model);
-
-  void callback(
-      const geometry_msgs::TwistStampedConstPtr& v_msg,
-      const geometry_msgs::TwistStampedConstPtr& lv_msg,
-      const geometry_msgs::TwistStampedConstPtr& h_msg);
+  std::vector<double> forward(std::vector<float> input_values);
 };
 
 class PromptReader : BaseReader{
- protected:
-  ros::Subscriber sub_v, sub_lv, sub_h;
-  geometry_msgs::Twist state_v, state_lv;
-  std_msgs::Float64 state_h;
-
  public:
-  PromptReader(ros::NodeHandle *nh, std::string onnx_model);
+  PromptReader(ros::NodeHandle *nh, std::string onnx_model_nathan, std::string onnx_model_kathy);
 
-  void callback_v(const geometry_msgs::Twist& v_msg);
+  void callback_v(const std_msgs::Float64& v_msg);
 
-  void callback_lv(const geometry_msgs::Twist& lv_msg);
+  void callback_accel(const std_msgs::Float64& accel_msg);
 
-  void callback_h(const std_msgs::Float64& h_msg);
+  void callback_minicar(const std_msgs::Float64& minicar_msg);
+
+  void callback_setspeed(const std_msgs::Int16& setspeed_msg);
+
+  void callback_timegap(const std_msgs::Int16& timegap_msg);
 
   void publish();
 };
