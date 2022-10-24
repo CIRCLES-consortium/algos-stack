@@ -51,9 +51,9 @@ std::vector<float> BaseReader::forward(std::vector<float> input_values) {
   str_log << "output_names.size() = " << output_names.size() << ", " << output_names[0] <<  std::endl;
   str_log << "The output_shape container has output_shape.size()==" << output_shape.size() << std::endl;
   str_log << "output_shape[0].size() == " << output_shape[0].size() << ") ";
-  str_log << "The output from the onnxmodel.Run (with output_shape[0][1] == " << output_shape[0][1] << ") ";
+  // str_log << "The output from the onnxmodel.Run (with output_shape[0][1] == " << output_shape[0][1] << ") ";
   // HACK HACK HACK
-  for( int i=0; i<output_shape[0][1]; i++ )
+  for( int i=0; i<output_shape[0].size(); i++ )
   {
       float val=0;
       val = output_values[i];
@@ -78,7 +78,7 @@ std::vector<float> BaseReader::forward(std::vector<float> input_values) {
   }
 
 //  ROS_INFO("%.8f %.8f %.8f > %.8f", input_values[0], input_values[1], input_values[2], output_values[0]);
-  // ROS_INFO(str_log.str().c_str());
+  ROS_INFO(str_log.str().c_str());
   ROS_INFO("[ %s ] = onnx.Run( %s )", output_stream.str().c_str(), input_stream.str().c_str() );
   str_log.clear();
   
