@@ -5,8 +5,8 @@ int main(int argc, char **argv){
   ros::NodeHandle nh;
   std::string onnx_model_nathan;
   std::string onnx_model_kathy;
-  nh.getParam("model_nathan", onnx_model_nathan);
-  nh.getParam("model_kathy", onnx_model_kathy);
+  nh.getParam("model_slow", onnx_model_nathan);
+  nh.getParam("model_fast", onnx_model_kathy);
   PromptReader reader = PromptReader(&nh, onnx_model_nathan, onnx_model_kathy);
 
   ros::Rate rate(20);
