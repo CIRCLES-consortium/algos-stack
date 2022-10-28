@@ -1,6 +1,6 @@
 <launch>
 
-    <arg name="bagfile_name" default="/var/panda/CyverseData/JmscslgroupData/bagfiles/2022_09_28/2022_09_28_00_46_35_2T3Y1RFV8KC014025rl_cruise_planner.bag"/>
+    <arg name="bagfile_name" default="~/catkin_ws/src/can_to_ros/bagfiles/medium_speed_test.bag"/>
     
     <node pkg="rosbag" type="play" name="unit_test_playback" args="$(arg bagfile_name) -s 100" />
 
