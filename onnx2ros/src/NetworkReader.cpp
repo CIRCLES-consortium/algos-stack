@@ -41,7 +41,7 @@ BaseReader::BaseReader(ros::NodeHandle *nh, std::string onnx_model_nathan, std::
 std::vector<double> BaseReader::forward(std::vector<float> input_values) {
   std::vector<Ort::Value> input_tensors;
   std::vector<double> result;
-  if (state_v.data < SPEED_THRESHOLD) { //Use Nathan's model - bear in mind we assume that the velocity and acceleration are in metric
+  if (input_values[7] < SPEED_THRESHOLD) { //Use Nathan's model - bear in mind we assume that the velocity and acceleration are in metric
     input_tensors.push_back(Ort::Experimental::Value::CreateTensor<float>(
         input_values.data(), input_values.size(), input_shapes_nathan[0]));
     auto output_tensors = session_nathan.Run(input_names_nathan, input_tensors, output_names_nathan);
@@ -113,14 +113,14 @@ void PromptReader::publish() {
   nh->getParam("SP_TARGET_SPEED", target_speed);
   nh->getParam("SP_MAX_HEADWAY", max_headway);
   // Target speeds at subsequent ranges is not valid obviously - FIX
-  target_speed_200 = target_speed;
-  target_speed_500 = target_speed;
-  target_speed_1000 = target_speed;
+  target_speed_200 = target_speed; // TODO @ALEX R FIX
+  target_speed_500 = target_speed; // TODO @ALEX R FIX
+  target_speed_1000 = target_speed; // TODO @ALEX R FIX
 
   std::vector<float> input_values;
   input_values.clear();
 
-  if (state_v.data < SPEED_THRESHOLD) { //Populate input fields for Nathan's controller
+  if (target_speed < SPEED_THRESHOLD) { //Populate input fields for Nathan's controller
     input_values.push_back(state_v.data / 40.0);
     for (int i = 0; i < 5; i++) {
       input_values.push_back(prev_accels[i] / 4.0);
