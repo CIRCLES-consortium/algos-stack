@@ -3,7 +3,7 @@
 #include <utility>
 
 //Is this speed threshold correct? It assumes that the speed from the CAN is in metric
-#define SPEED_THRESHOLD (96.56)
+#define SPEED_THRESHOLD (25)
 
 BaseReader::BaseReader(ros::NodeHandle *nh, std::string onnx_model_nathan, std::string onnx_model_kathy):
     nh(nh),
