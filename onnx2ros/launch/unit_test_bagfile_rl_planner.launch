@@ -1,6 +1,6 @@
 <launch>
 
-    <arg name="bagfile_name" default="~/catkin_ws/src/can_to_ros/bagfiles/medium_speed_test.bag"/>
+    <arg name="bagfile_name" default="/home/circles/2022_09_28_00_46_35_2T3Y1RFV8KC014025rl_cruise_planner.bag"/>
     
     <node pkg="rosbag" type="play" name="unit_test_playback" args="$(arg bagfile_name) -s 100" />
 
@@ -15,7 +15,8 @@
     <param name="/SP_TARGET_SPEED" value="$(arg SP_TARGET_SPEED)"/>
     <param name="/SP_MAX_HEADWAY" value="$(arg SP_MAX_HEADWAY)"/>
 
-    <param name="model" type="string" value="$(find onnx2ros)/../controllers/RL-cruise-hybrid/rl_acc_blind_sp/model.onnx"/>
+    <param name="model_slow" type="string" value="$(find onnx2ros)/../controllers/RL-cruise-hybrid/rl_acc_blind_sp/model.onnx"/>
+    <param name="model_fast" type="string" value="$(find onnx2ros)/../controllers/RL-cruise-hybrid/rl_acc_blind_sp_c/model.onnx"/>
     <param name="mode" type="string" value="prompt"/>
     <param name="v" type="double" value="30.0"/>
     <param name="lv" type="double" value="10.0"/>

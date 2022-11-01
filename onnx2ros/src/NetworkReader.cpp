@@ -41,7 +41,7 @@ BaseReader::BaseReader(ros::NodeHandle *nh, std::string onnx_model_nathan, std::
 std::vector<double> BaseReader::forward(std::vector<float> input_values) {
   std::vector<Ort::Value> input_tensors;
   std::vector<double> result;
-  if (input_values[7] < SPEED_THRESHOLD) { //Use Nathan's model - bear in mind we assume that the velocity and acceleration are in metric
+  if (input_values.size() > 12) { //Use Nathan's model - bear in mind we assume that the velocity and acceleration are in metric
     input_tensors.push_back(Ort::Experimental::Value::CreateTensor<float>(
         input_values.data(), input_values.size(), input_shapes_nathan[0]));
     auto output_tensors = session_nathan.Run(input_names_nathan, input_tensors, output_names_nathan);
