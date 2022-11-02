@@ -171,7 +171,7 @@ void PromptReader::publish() {
     input_values.push_back(state_spspeed200.data / 40.0);
     input_values.push_back(state_spspeed500.data / 40.0);
     input_values.push_back(state_spspeed1000.data / 40.0);
-    input_values.push_back((float)(state_setspeed.data) / 40.0);
+    input_values.push_back((float)(state_setspeed.data) / 0.44704 / 40.0);
     input_values.push_back((float)(state_timegap.data) / 3.0);
     for (int i = 0; i < 10; i++) {
       input_values.push_back(prev_vels[i] / 40.0);
@@ -186,7 +186,7 @@ void PromptReader::publish() {
     input_values.push_back(state_minicar.data);
     input_values.push_back(state_spspeed.data / 40.0);
     input_values.push_back(state_spmaxheadway.data);
-    input_values.push_back(state_setspeed.data / 40.0);
+    input_values.push_back(state_setspeed.data / 0.44704 / 40.0);
     input_values.push_back(state_timegap.data / 3.0);
   }
 
@@ -226,14 +226,14 @@ void PromptReader::publish() {
     std::string prev_vels_str = prev_vels_ss.str();
     std::string prev_accels_str = prev_accels_ss.str();
     std::string prev_req_vels_str = prev_req_vels_ss.str();
-    fprintf(unit_test_file, "%s,%s,%s,%lf,%lf,%lf,%i,%i,%lf,%lf,%lf,%lf,%i,%li,%li\n",
+    fprintf(unit_test_file, "%s,%s,%s,%lf,%lf,%lf,%f,%i,%lf,%lf,%lf,%lf,%i,%li,%li\n",
       prev_vels_str.c_str(),
       prev_req_vels_str.c_str(),
       prev_accels_str.c_str(),
       state_v.data,
       state_accel.data,
       state_minicar.data,
-      state_setspeed.data,
+      (float)state_setspeed.data / 0.44704,
       state_timegap.data,
       state_spspeed.data,
       state_spspeed200.data,
