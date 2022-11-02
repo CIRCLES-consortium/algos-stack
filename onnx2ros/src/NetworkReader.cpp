@@ -99,7 +99,7 @@ PromptReader::PromptReader(ros::NodeHandle *nh, std::string onnx_model_nathan, s
     std::string unit_test_path;
     nh->getParam("SP_UNIT_TEST_FILE", unit_test_path);
     unit_test_file = fopen(unit_test_path.c_str(), "w+");
-    fprintf(unit_test_file, "prev_vels,prev_req_vels,prev_accels,state_v,state_accel,state_minicar,state_setspeed,state_timegap,state_spspeed,state_spspeed200,state_spspeed500,state_spspeed1000,state_spmaxheadway,target_speed,target_gap\n");
+    fprintf(unit_test_file, "prev_vels,prev_req_vels,prev_accels,state_v,state_accel,state_minicar,state_setspeed,state_timegap,state_spspeed,state_spspeed200,state_spspeed500,state_spspeed1000,state_spmaxheadway,speed_setting,gap_setting\n");
   }
 }
 
