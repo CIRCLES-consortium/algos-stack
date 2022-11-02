@@ -7,7 +7,6 @@
 
 #define clamp(value,floor,ceiling) std::max(std::min((float)value,(float)ceiling),(float)floor)
 
-//Is this speed threshold correct? It assumes that the speed from the CAN is in metric
 #define SPEED_THRESHOLD (25)
 
 BaseReader::BaseReader(ros::NodeHandle *nh, std::string onnx_model_nathan, std::string onnx_model_kathy):
@@ -149,7 +148,7 @@ void PromptReader::callback_spmaxheadway(const std_msgs::Byte& spmaxheadway_msg)
 
 int PromptReader::convertSpeedDataToMPH(double out) {
   out = clamp(out, -1.0, 1.0);
-  return clamp(static_cast<int>(((out + 1.0) * 20.0) / 0.44704), 20, 80);
+  return static_cast<int>(clamp((out + 1.0) * 20.0 / 0.44704, 20.0, 80.0));
 }
 
 int PromptReader::convertGapDataToSetting(double out) {
