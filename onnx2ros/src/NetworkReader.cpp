@@ -30,7 +30,7 @@ BaseReader::BaseReader(ros::NodeHandle *nh, std::string onnx_model_nathan, std::
     prev_vels.push_back(0.0);
     prev_req_vels.push_back(0.0);
   }
-  for (int i = 0; i < 5; i++) {
+  for (int i = 0; i < 6; i++) {
     prev_accels.push_back(0.0);
   }
 }
