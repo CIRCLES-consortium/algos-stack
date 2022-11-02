@@ -236,6 +236,9 @@ void PromptReader::publish() {
     std::string prev_vels_str = prev_vels_ss.str();
     std::string prev_accels_str = prev_accels_ss.str();
     std::string prev_req_vels_str = prev_req_vels_ss.str();
+    
+    // DEBUG string
+    std::cout << msg_speed.data << msg_gap.data << std::endl;
     fprintf(unit_test_file, "%s,%s,%s,%lf,%lf,%lf,%f,%i,%lf,%lf,%lf,%lf,%i,%i,%i\n",
       prev_vels_str.c_str(),
       prev_req_vels_str.c_str(),
