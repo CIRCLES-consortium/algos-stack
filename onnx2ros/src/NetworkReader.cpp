@@ -198,52 +198,53 @@ void PromptReader::publish() {
   //Might need to swap these two values. Will check.
   msg_speed.data = PromptReader::convertSpeedDataToMPH(result[0]);
   msg_gap.data = PromptReader::convertGapDataToSetting(result[1]);
+  if (unit_test) {
+    std::stringstream prev_vels_ss;
+    std::stringstream prev_req_vels_ss;
+    std::stringstream prev_accels_ss;
 
-  std::stringstream prev_vels_ss;
-  std::stringstream prev_req_vels_ss;
-  std::stringstream prev_accels_ss;
-
-  prev_vels_ss << "\"" << "[";
-  prev_req_vels_ss << '"' << '[';
-  prev_accels_ss << '"' << '[';
-  for (int i = 0; i < 10; i++) {
-    prev_vels_ss << prev_vels[i];
-    prev_req_vels_ss << prev_req_vels[i];
-    if (i != 9) {
-      prev_vels_ss << ' ';
-      prev_req_vels_ss << ' ';
+    prev_vels_ss << "\"" << "[";
+    prev_req_vels_ss << '"' << '[';
+    prev_accels_ss << '"' << '[';
+    for (int i = 0; i < 10; i++) {
+      prev_vels_ss << prev_vels[i];
+      prev_req_vels_ss << prev_req_vels[i];
+      if (i != 9) {
+        prev_vels_ss << ' ';
+        prev_req_vels_ss << ' ';
+      }
     }
-  }
-  for (int i = 0; i < 5; i++) {
-    prev_accels_ss << prev_accels[i];
-    if (i != 4) {
-      prev_accels_ss << ' ';
+    for (int i = 0; i < 5; i++) {
+      prev_accels_ss << prev_accels[i];
+      if (i != 4) {
+        prev_accels_ss << ' ';
+      }
     }
-  }
-  prev_vels_ss << ']' << '"';
-  prev_req_vels_ss << ']' << '"';
-  prev_accels_ss << ']' << '"';
+    prev_vels_ss << ']' << '"';
+    prev_req_vels_ss << ']' << '"';
+    prev_accels_ss << ']' << '"';
 
-  std::string prev_vels_str = prev_vels_ss.str();
-  std::string prev_accels_str = prev_accels_ss.str();
-  std::string prev_req_vels_str = prev_req_vels_ss.str();
-  fprintf(unit_test_file, "%s,%s,%s,%lf,%lf,%lf,%i,%i,%lf,%lf,%lf,%lf,%i,%lf,%lf\n",
-    prev_vels_str.c_str(),
-    prev_req_vels_str.c_str(),
-    prev_accels_str.c_str(),
-    state_v.data,
-    state_accel.data,
-    state_minicar.data,
-    state_setspeed.data,
-    state_timegap.data,
-    state_spspeed.data,
-    state_spspeed200.data,
-    state_spspeed500.data,
-    state_spspeed1000.data,
-    state_spmaxheadway.data,
-    msg_speed.data,
-    msg_gap.data);
-  fflush(unit_test_file);
+    std::string prev_vels_str = prev_vels_ss.str();
+    std::string prev_accels_str = prev_accels_ss.str();
+    std::string prev_req_vels_str = prev_req_vels_ss.str();
+    fprintf(unit_test_file, "%s,%s,%s,%lf,%lf,%lf,%i,%i,%lf,%lf,%lf,%lf,%i,%lf,%lf\n",
+      prev_vels_str.c_str(),
+      prev_req_vels_str.c_str(),
+      prev_accels_str.c_str(),
+      state_v.data,
+      state_accel.data,
+      state_minicar.data,
+      state_setspeed.data,
+      state_timegap.data,
+      state_spspeed.data,
+      state_spspeed200.data,
+      state_spspeed500.data,
+      state_spspeed1000.data,
+      state_spmaxheadway.data,
+      msg_speed.data,
+      msg_gap.data);
+    fflush(unit_test_file);
+  }
   //"prev_vels,prev_accels,prev_req_vels,state_v,state_accel,state_minicar,state_setspeed,state_timegap,state_spspeed,state_spspeed200,state_spspeed500,state_spspeed1000,state_spmaxheadway,target_speed,target_gap\n");
 
   prev_req_vels.insert(prev_req_vels.begin(), (float)msg_speed.data);
