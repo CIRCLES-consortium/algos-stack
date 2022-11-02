@@ -213,10 +213,20 @@ void PromptReader::publish() {
         prev_req_vels_ss << ' ';
       }
     }
-    for (int i = 0; i < 5; i++) {
-      prev_accels_ss << prev_accels[i];
-      if (i != 4) {
-        prev_accels_ss << ' ';
+
+    if (prev_accels.size() == 6) {
+      for (int i = 0; i < 6; i++) {
+        prev_accels_ss << prev_accels[i];
+        if (i != 5) {
+          prev_accels_ss << ' ';
+        }
+      }
+    } else {
+      for (int i = 0; i < 5; i++) {
+        prev_accels_ss << prev_accels[i];
+        if (i != 4) {
+          prev_accels_ss << ' ';
+        }
       }
     }
     prev_vels_ss << ']' << '"';
