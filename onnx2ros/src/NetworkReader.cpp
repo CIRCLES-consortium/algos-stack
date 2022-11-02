@@ -148,7 +148,7 @@ void PromptReader::callback_spmaxheadway(const std_msgs::Byte& spmaxheadway_msg)
 
 int PromptReader::convertSpeedDataToMPH(double out) {
   out = clamp(out, -1.0, 1.0);
-  return static_cast<int>(clamp((out + 1.0) * 20.0 / 0.44704, 20.0, 80.0));
+  return static_cast<int>(clamp(static_cast<int>((out + 1.0) * 20.0 / 0.44704), 20, 80));
 }
 
 int PromptReader::convertGapDataToSetting(double out) {
