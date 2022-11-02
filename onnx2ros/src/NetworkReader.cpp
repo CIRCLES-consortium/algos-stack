@@ -206,8 +206,8 @@ void PromptReader::publish() {
     prev_req_vels_ss << '"' << '[';
     prev_accels_ss << '"' << '[';
     for (int i = 0; i < 10; i++) {
-      prev_vels_ss << prev_vels[i];
-      prev_req_vels_ss << prev_req_vels[i];
+      prev_vels_ss << prev_vels[i] / 40.0;
+      prev_req_vels_ss << prev_req_vels[i] / 40.0;
       if (i != 9) {
         prev_vels_ss << ' ';
         prev_req_vels_ss << ' ';
@@ -216,7 +216,7 @@ void PromptReader::publish() {
 
     if (prev_accels.size() == 6) {
       for (int i = 0; i < 6; i++) {
-        prev_accels_ss << prev_accels[i];
+        prev_accels_ss << prev_accels[i] / 4.0;
         if (i != 5) {
           prev_accels_ss << ' ';
         }
@@ -240,15 +240,15 @@ void PromptReader::publish() {
       prev_vels_str.c_str(),
       prev_req_vels_str.c_str(),
       prev_accels_str.c_str(),
-      state_v.data,
+      state_v.data / 40.0,
       state_accel.data,
       state_minicar.data,
-      (float)state_setspeed.data / 0.44704,
-      state_timegap.data,
-      state_spspeed.data,
-      state_spspeed200.data,
-      state_spspeed500.data,
-      state_spspeed1000.data,
+      (float)state_setspeed.data / 0.44704 / 40.0,
+      state_timegap.data / 3.0,
+      state_spspeed.data / 40.0,
+      state_spspeed200.data / 40.0,
+      state_spspeed500.data / 40.0,
+      state_spspeed1000.data / 40.0,
       state_spmaxheadway.data,
       msg_speed.data,
       msg_gap.data);
