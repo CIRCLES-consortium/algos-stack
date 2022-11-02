@@ -99,6 +99,19 @@ PromptReader::PromptReader(ros::NodeHandle *nh, std::string onnx_model_nathan, s
     unit_test_file = fopen(unit_test_path.c_str(), "w+");
     fprintf(unit_test_file, "prev_vels,prev_req_vels,prev_accels,state_v,state_accel,state_minicar,state_setspeed,state_timegap,state_spspeed,state_spspeed200,state_spspeed500,state_spspeed1000,state_spmaxheadway,speed_setting,gap_setting\n");
   }
+
+  if (!(nh->hasParam("SP_UNIT_TEST_FILE_KATHY"))) {
+    unit_test = 0;
+    unit_test_file_kathy = NULL;
+  }
+  else {
+    unit_test = 1;
+    std::string unit_test_path;
+    nh->getParam("SP_UNIT_TEST_FILE_KATHY", unit_test_path);
+    unit_test_file_kathy = fopen(unit_test_path.c_str(), "w+");
+    fprintf(unit_test_file_kathy, "input_str,speed_setting,gap_setting\n");
+  }
+
 }
 
 void PromptReader::callback_v(const std_msgs::Float64& v_msg) {
@@ -189,24 +202,6 @@ void PromptReader::publish() {
     input_values.push_back((float)state_timegap.data / 3.0);
   }
 
-  // <--- Additional DEBUG 
-  std::stringstream input_print_ss;
-  for (int i = 0; i < input_values.size(); i++) {
-      input_print_ss << input_values[i];
-      if (i != input_values.size() - 1) {
-        input_print_ss << ' ';
-      }
-    }
-  std::string input_print_str = input_print_ss.str();
-  std::cout << input_print_str << std::endl;
-
-  // fprintf(unit_test_file, "%s,%lf,%lf\n",
-  //     input_print_str,
-  //     result[0],
-  //     result[1]);
-  //   fflush(unit_test_file);
-  // --->
-
   std_msgs::Int16 msg_speed;
   std_msgs::Int16 msg_gap;
   std::vector<double> result = PromptReader::forward(input_values);
@@ -215,7 +210,26 @@ void PromptReader::publish() {
   //REMOVED FOR DEBUG
   // msg_speed.data = PromptReader::convertSpeedDataToMPH(result[0]);
   // msg_gap.data = PromptReader::convertGapDataToSetting(result[1]);
+
   if (unit_test) {
+    // <--- Additional DEBUG 
+    std::stringstream input_print_ss;
+    for (int i = 0; i < input_values.size(); i++) {
+        input_print_ss << input_values[i];
+        if (i != input_values.size() - 1) {
+          input_print_ss << ' ';
+        }
+      }
+    std::string input_print_str = input_print_ss.str();
+    std::cout << input_print_str << std::endl;
+
+    fprintf(unit_test_file_kathy, "%s,%lf,%lf\n",
+        input_print_str,
+        result[0],
+        result[1]);
+      fflush(unit_test_file_kathy);
+    // --->
+
     std::stringstream prev_vels_ss;
     std::stringstream prev_req_vels_ss;
     std::stringstream prev_accels_ss;
@@ -257,7 +271,7 @@ void PromptReader::publish() {
     
     // DEBUG string
     // std::cout << std::to_string(state_spmaxheadway.data) << " " << std::to_string(result[0]) << " " << std::to_string(result[1]) << std::endl;
-    //std::cout << typeid(result[0]).name() << typeid(result[1]).name() << std::endl;
+    // std::cout << typeid(result[0]).name() << typeid(result[1]).name() << std::endl;
     // std::cout << typeid(state_spmaxheadway.data).name() << " " << typeid(state_spspeed200.data).name() << std::endl;
     // std::cout << typeid(state_v.data).name() << " " << typeid(state_accel.data).name() << " " <<  typeid(state_minicar.data).name() << std::endl;
     fprintf(unit_test_file, "%s,%s,%s,%lf,%lf,%lf,%lf,%lf,%lf,%lf,%lf,%lf,%lf,%lf,%lf\n",
