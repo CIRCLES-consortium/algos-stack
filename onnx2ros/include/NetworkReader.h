@@ -10,12 +10,14 @@
 #include <geometry_msgs/Twist.h>
 #include <std_msgs/Float64.h>
 #include <std_msgs/Int16.h>
+#include <std_msgs/Byte.h>
 
 #include <algorithm>
 #include <iostream>
 #include <sstream>
 #include <vector>
 #include <experimental_onnxruntime_cxx_api.h>
+#include <cstdio>
 
 class BaseReader{
  protected:
@@ -29,9 +31,12 @@ class BaseReader{
   std::vector<std::string> input_names_nathan, output_names_nathan, input_names_kathy, output_names_kathy;
   std::vector<std::vector<int64_t>> input_shapes_nathan, input_shapes_kathy;
   std::vector<float> prev_vels, prev_req_vels, prev_accels;
-  ros::Subscriber sub_v, sub_accel, sub_minicar, sub_setspeed, sub_timegap;
-  std_msgs::Float64 state_v, state_accel, state_minicar;
+  ros::Subscriber sub_v, sub_accel, sub_minicar, sub_setspeed, sub_timegap, sub_spspeed, sub_spspeed200, sub_spspeed500, sub_spspeed1000, sub_spmaxheadway;
+  std_msgs::Float64 state_v, state_accel, state_minicar, state_spspeed, state_spspeed200, state_spspeed500, state_spspeed1000;
+  std_msgs::Byte  state_spmaxheadway;
   std_msgs::Int16 state_setspeed, state_timegap;
+  int unit_test;
+  FILE* unit_test_file;
 
  public:
   BaseReader(ros::NodeHandle *nh, std::string onnx_model_nathan, std::string onnx_model_kathy);
@@ -52,6 +57,20 @@ class PromptReader : BaseReader{
   void callback_setspeed(const std_msgs::Int16& setspeed_msg);
 
   void callback_timegap(const std_msgs::Int16& timegap_msg);
+
+  void callback_spspeed(const std_msgs::Float64& spspeed_msg);
+
+  void callback_spspeed200(const std_msgs::Float64& spspeed200_msg);
+
+  void callback_spspeed500(const std_msgs::Float64& spspeed500_msg);
+
+  void callback_spspeed1000(const std_msgs::Float64& spspeed1000_msg);
+
+  void callback_spmaxheadway(const std_msgs::Byte& spmaxheadway_msg);
+
+  int convertSpeedDataToMPH(double out);
+
+  int convertGapDataToSetting(double out);
 
   void publish();
 };

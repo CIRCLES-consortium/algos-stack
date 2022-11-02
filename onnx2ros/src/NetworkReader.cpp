@@ -1,6 +1,11 @@
 #include "NetworkReader.h"
 
 #include <utility>
+#include <algorithm>
+#include <cstdio>
+#include <sstream>
+
+#define clamp(value,floor,ceiling) std::max(std::min((float)value,(float)ceiling),(float)floor)
 
 //Is this speed threshold correct? It assumes that the speed from the CAN is in metric
 #define SPEED_THRESHOLD (25)
@@ -61,8 +66,8 @@ std::vector<double> BaseReader::forward(std::vector<float> input_values) {
 
 PromptReader::PromptReader(ros::NodeHandle *nh, std::string onnx_model_nathan, std::string onnx_model_kathy):
     BaseReader(nh, std::move(onnx_model_nathan), std::move(onnx_model_kathy)){
-  pub_speed = nh->advertise<std_msgs::Float64>("target_speed_setting", 10);
-  pub_gap = nh->advertise<std_msgs::Float64>("target_gap_setting", 10);
+  pub_speed = nh->advertise<std_msgs::Int16>("target_speed_setting", 10);
+  pub_gap = nh->advertise<std_msgs::Int16>("target_gap_setting", 10);
   sub_v = nh->subscribe("vel", 10, &PromptReader::callback_v, this);
   sub_accel = nh->subscribe("accel", 10, &PromptReader::callback_accel, this);
   sub_minicar = nh->subscribe("mini_car", 10, &PromptReader::callback_minicar, this);
@@ -85,6 +90,17 @@ PromptReader::PromptReader(ros::NodeHandle *nh, std::string onnx_model_nathan, s
   state_spspeed500.data = 30;
   state_spspeed1000.data = 30;
   state_spmaxheadway.data = 0;
+  if (!(nh->hasParam("SP_UNIT_TEST_FILE"))) {
+    unit_test = 0;
+    unit_test_file = NULL;
+  }
+  else {
+    unit_test = 1;
+    std::string unit_test_path;
+    nh->getParam("SP_UNIT_TEST_FILE", unit_test_path);
+    unit_test_file = fopen(unit_test_path.c_str(), "w+");
+    fprintf(unit_test_file, "prev_vels,prev_req_vels,prev_accels,state_v,state_accel,state_minicar,state_setspeed,state_timegap,state_spspeed,state_spspeed200,state_spspeed500,state_spspeed1000,state_spmaxheadway,target_speed,target_gap\n");
+  }
 }
 
 void PromptReader::callback_v(const std_msgs::Float64& v_msg) {
@@ -127,15 +143,25 @@ void PromptReader::callback_spspeed1000(const std_msgs::Float64& spspeed1000_msg
   state_spspeed1000 = spspeed1000_msg;
 }
 
-void PromptReader::callback_spmaxheadway(const std_msgs::Float64& spmaxheadway_msg) {
+void PromptReader::callback_spmaxheadway(const std_msgs::Byte& spmaxheadway_msg) {
   state_spmaxheadway = spmaxheadway_msg;
+}
+
+int PromptReader::convertSpeedDataToMPH(double out) {
+  out = clamp(out, -1.0, 1.0);
+  return clamp(static_cast<int>(((out + 1.0) * 20.0) / 0.44704), 20, 80);
+}
+
+int PromptReader::convertGapDataToSetting(double out) {
+  out = clamp(out, -1.0, 1.0);
+  return out > (1.0f / 3.0f) ? 1 : out > (-1.0f / 3.0f) ? 2 : 3;
 }
 
 void PromptReader::publish() {
   std::vector<float> input_values;
   input_values.clear();
 
-  if (target_speed < SPEED_THRESHOLD) { //Populate input fields for Nathan's controller
+  if (state_spspeed.data < SPEED_THRESHOLD) { //Populate input fields for Nathan's controller
     input_values.push_back(state_v.data / 40.0);
     for (int i = 0; i < 5; i++) {
       input_values.push_back(prev_accels[i] / 4.0);
@@ -165,13 +191,60 @@ void PromptReader::publish() {
     input_values.push_back(state_timegap.data / 3.0);
   }
 
-  std_msgs::Float64 msg_speed;
-  std_msgs::Float64 msg_gap;
+  std_msgs::Int16 msg_speed;
+  std_msgs::Int16 msg_gap;
   std::vector<double> result = PromptReader::forward(input_values);
 
   //Might need to swap these two values. Will check.
-  msg_speed.data = result[0];
-  msg_gap.data = result[1];
+  msg_speed.data = PromptReader::convertSpeedDataToMPH(result[0]);
+  msg_gap.data = PromptReader::convertGapDataToSetting(result[1]);
+
+  std::stringstream prev_vels_ss;
+  std::stringstream prev_req_vels_ss;
+  std::stringstream prev_accels_ss;
+
+  prev_vels_ss << "\"" << "[";
+  prev_req_vels_ss << '"' << '[';
+  prev_accels_ss << '"' << '[';
+  for (int i = 0; i < 10; i++) {
+    prev_vels_ss << prev_vels[i];
+    prev_req_vels_ss << prev_req_vels[i];
+    if (i != 9) {
+      prev_vels_ss << ' ';
+      prev_req_vels_ss << ' ';
+    }
+  }
+  for (int i = 0; i < 5; i++) {
+    prev_accels_ss << prev_accels[i];
+    if (i != 4) {
+      prev_accels_ss << ' ';
+    }
+  }
+  prev_vels_ss << ']' << '"';
+  prev_req_vels_ss << ']' << '"';
+  prev_accels_ss << ']' << '"';
+
+  std::string prev_vels_str = prev_vels_ss.str();
+  std::string prev_accels_str = prev_accels_ss.str();
+  std::string prev_req_vels_str = prev_req_vels_ss.str();
+  fprintf(unit_test_file, "%s,%s,%s,%lf,%lf,%lf,%i,%i,%lf,%lf,%lf,%lf,%i,%lf,%lf\n",
+    prev_vels_str.c_str(),
+    prev_req_vels_str.c_str(),
+    prev_accels_str.c_str(),
+    state_v.data,
+    state_accel.data,
+    state_minicar.data,
+    state_setspeed.data,
+    state_timegap.data,
+    state_spspeed.data,
+    state_spspeed200.data,
+    state_spspeed500.data,
+    state_spspeed1000.data,
+    state_spmaxheadway.data,
+    msg_speed.data,
+    msg_gap.data);
+  fflush(unit_test_file);
+  //"prev_vels,prev_accels,prev_req_vels,state_v,state_accel,state_minicar,state_setspeed,state_timegap,state_spspeed,state_spspeed200,state_spspeed500,state_spspeed1000,state_spmaxheadway,target_speed,target_gap\n");
 
   prev_req_vels.insert(prev_req_vels.begin(), (float)msg_speed.data);
   prev_req_vels.pop_back();
