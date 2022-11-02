@@ -195,8 +195,9 @@ void PromptReader::publish() {
   std::vector<double> result = PromptReader::forward(input_values);
 
   //Might need to swap these two values. Will check.
-  msg_speed.data = PromptReader::convertSpeedDataToMPH(result[0]);
-  msg_gap.data = PromptReader::convertGapDataToSetting(result[1]);
+  //REMOVED FOR DEBUG
+  // msg_speed.data = PromptReader::convertSpeedDataToMPH(result[0]);
+  // msg_gap.data = PromptReader::convertGapDataToSetting(result[1]);
   if (unit_test) {
     std::stringstream prev_vels_ss;
     std::stringstream prev_req_vels_ss;
@@ -238,8 +239,10 @@ void PromptReader::publish() {
     std::string prev_req_vels_str = prev_req_vels_ss.str();
     
     // DEBUG string
-    std::cout << msg_speed.data << msg_gap.data << std::endl;
-    fprintf(unit_test_file, "%s,%s,%s,%lf,%lf,%lf,%f,%i,%lf,%lf,%lf,%lf,%i,%i,%i\n",
+    // std::cout << std::to_string(state_spmaxheadway.data) << " " << std::to_string(result[0]) << " " << std::to_string(result[1]) << std::endl;
+    //std::cout << typeid(result[0]).name() << typeid(result[1]).name() << std::endl;
+    // std::cout << typeid(state_spmaxheadway.data).name() << " " << typeid(state_spspeed200.data).name() << std::endl;
+    fprintf(unit_test_file, "%s,%s,%s,%lf,%lf,%lf,%lf,%lf,%lf,%lf,%lf,%lf,%lf,%lf,%lf\n",
       prev_vels_str.c_str(),
       prev_req_vels_str.c_str(),
       prev_accels_str.c_str(),
@@ -247,14 +250,14 @@ void PromptReader::publish() {
       state_accel.data,
       state_minicar.data,
       (float)state_setspeed.data / 0.44704 / 40.0,
-      state_timegap.data / 3.0,
+      (float)state_timegap.data / 3.0,
       state_spspeed.data / 40.0,
       state_spspeed200.data / 40.0,
       state_spspeed500.data / 40.0,
       state_spspeed1000.data / 40.0,
-      state_spmaxheadway.data,
-      msg_speed.data,
-      msg_gap.data);
+      (float)state_spmaxheadway.data,
+      result[0],
+      result[1]);
     fflush(unit_test_file);
   }
   //"prev_vels,prev_accels,prev_req_vels,state_v,state_accel,state_minicar,state_setspeed,state_timegap,state_spspeed,state_spspeed200,state_spspeed500,state_spspeed1000,state_spmaxheadway,target_speed,target_gap\n");
