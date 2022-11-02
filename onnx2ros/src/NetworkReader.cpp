@@ -189,6 +189,24 @@ void PromptReader::publish() {
     input_values.push_back(state_timegap.data / 3.0);
   }
 
+  // <--- Additional DEBUG 
+  std::stringstream input_print_ss;
+  for (int i = 0; i < input_values.size(); i++) {
+      input_print_ss << input_values[i];
+      if (i != input_values.size() - 1) {
+        input_print_ss << ' ';
+      }
+    }
+  std::string input_print_str = input_print_ss.str();
+  std::cout << input_print_str << std::endl;
+
+  // fprintf(unit_test_file, "%s,%lf,%lf\n",
+  //     input_print_str,
+  //     result[0],
+  //     result[1]);
+  //   fflush(unit_test_file);
+  // --->
+
   std_msgs::Int16 msg_speed;
   std_msgs::Int16 msg_gap;
   std::vector<double> result = PromptReader::forward(input_values);
