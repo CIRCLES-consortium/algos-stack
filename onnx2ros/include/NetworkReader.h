@@ -35,6 +35,7 @@ class BaseReader{
   std_msgs::Int16 state_spmaxheadway, state_setspeed, state_timegap;
   int unit_test;
   FILE* unit_test_file;
+  FILE* unit_test_file_kathy;
 
  public:
   BaseReader(ros::NodeHandle *nh, std::string onnx_model_nathan, std::string onnx_model_kathy);
