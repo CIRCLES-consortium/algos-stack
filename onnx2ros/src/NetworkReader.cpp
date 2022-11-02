@@ -224,7 +224,7 @@ void PromptReader::publish() {
     std::cout << input_print_str << std::endl;
 
     fprintf(unit_test_file_kathy, "%s,%lf,%lf\n",
-        input_print_str,
+        input_print_str.c_str(),
         result[0],
         result[1]);
       fflush(unit_test_file_kathy);
