@@ -102,7 +102,7 @@ PromptReader::PromptReader(ros::NodeHandle *nh, std::string onnx_model_nathan, s
 }
 
 void PromptReader::callback_v(const std_msgs::Float64& v_msg) {
-  state_v = v_msg / 3.6;  // convert kph to m/s
+  state_v = v_msg;  // kph, to be converted to m/s
   prev_vels.insert(prev_vels.begin(), (float)v_msg.data / 3.6);  // convert kph to m/s
   prev_vels.pop_back();
 }
@@ -118,7 +118,7 @@ void PromptReader::callback_minicar(const std_msgs::Float64& minicar_msg) {
 }
 
 void PromptReader::callback_setspeed(const std_msgs::Int16& setspeed_msg) {
-  state_setspeed = setspeed_msg * 0.44704;  // convert mph to m/s
+  state_setspeed = setspeed_msg;  // mph, to be converted to m/s
 }
 
 void PromptReader::callback_timegap(const std_msgs::Int16& timegap_msg) {
@@ -160,7 +160,7 @@ void PromptReader::publish() {
   input_values.clear();
 
   if (state_spspeed.data < SPEED_THRESHOLD) { //Populate input fields for Nathan's controller
-    input_values.push_back(state_v.data / 40.0);
+    input_values.push_back(state_v.data / 3.6 / 40.0);
     for (int i = 0; i < 5; i++) {
       input_values.push_back(prev_accels[i] / 4.0);
     }
@@ -170,7 +170,7 @@ void PromptReader::publish() {
     input_values.push_back(state_spspeed200.data / 40.0);
     input_values.push_back(state_spspeed500.data / 40.0);
     input_values.push_back(state_spspeed1000.data / 40.0);
-    input_values.push_back((float)(state_setspeed.data) / 40.0);
+    input_values.push_back((float)(state_setspeed.data) * 0.44704 / 40.0);
     input_values.push_back((float)(state_timegap.data) / 3.0);
     for (int i = 0; i < 10; i++) {
       input_values.push_back(prev_vels[i] / 40.0);
@@ -178,15 +178,15 @@ void PromptReader::publish() {
     }
   }
   else { //Populate fields for Kathy's controller
-    input_values.push_back(state_v.data / 40.0);
+    input_values.push_back(state_v.data / 3.6 / 40.0);
     for (int i = 0; i < 6; i++) {
       input_values.push_back(prev_accels[i] / 4.0);
     }
     input_values.push_back(state_minicar.data);
     input_values.push_back(state_spspeed.data / 40.0);
-    input_values.push_back(state_spmaxheadway.data);
-    input_values.push_back(state_setspeed.data / 40.0);
-    input_values.push_back(state_timegap.data / 3.0);
+    input_values.push_back((float)state_spmaxheadway.data);
+    input_values.push_back((float)state_setspeed.data * 0.44704 / 40.0);
+    input_values.push_back((float)state_timegap.data / 3.0);
   }
 
   // <--- Additional DEBUG 
@@ -264,10 +264,10 @@ void PromptReader::publish() {
       prev_vels_str.c_str(),
       prev_req_vels_str.c_str(),
       prev_accels_str.c_str(),
-      state_v.data / 40.0,
+      state_v.data / 3.6 / 40.0,
       state_accel.data / 4.0,
       state_minicar.data,
-      (float)state_setspeed.data / 40.0,
+      (float)state_setspeed.data * 0.44704 / 40.0,
       (float)state_timegap.data / 3.0,
       state_spspeed.data / 40.0,
       state_spspeed200.data / 40.0,
