@@ -67,27 +67,26 @@ PromptReader::PromptReader(ros::NodeHandle *nh, std::string onnx_model_nathan, s
     BaseReader(nh, std::move(onnx_model_nathan), std::move(onnx_model_kathy)){
   pub_speed = nh->advertise<std_msgs::Int16>("target_speed_setting", 10);
   pub_gap = nh->advertise<std_msgs::Int16>("target_gap_setting", 10);
-  sub_v = nh->subscribe("vel", 10, &PromptReader::callback_v, this);
-  sub_accel = nh->subscribe("accel", 10, &PromptReader::callback_accel, this);
+  sub_v = nh->subscribe("vel", 10, &PromptReader::callback_v, this);  // kph
+  sub_accel = nh->subscribe("accel", 10, &PromptReader::callback_accel, this);  // m/s/s
   sub_minicar = nh->subscribe("mini_car", 10, &PromptReader::callback_minicar, this);
-  sub_setspeed = nh->subscribe("acc/set_speed", 10, &PromptReader::callback_setspeed, this);
-  sub_timegap = nh->subscribe("acc/distance_setting", 10, &PromptReader::callback_timegap, this);
-  sub_spspeed = nh->subscribe("sp/target_speed", 10, &PromptReader::callback_spspeed, this);
-  sub_spspeed200 = nh->subscribe("sp/target_speed_200", 10, &PromptReader::callback_spspeed200, this);
-  sub_spspeed500 = nh->subscribe("sp/target_speed_500", 10, &PromptReader::callback_spspeed500, this);
-  sub_spspeed1000 = nh->subscribe("sp/target_speed_1000", 10, &PromptReader::callback_spspeed1000, this);
+  sub_setspeed = nh->subscribe("acc/set_speed", 10, &PromptReader::callback_setspeed, this);  // mph
+  sub_timegap = nh->subscribe("acc/distance_setting", 10, &PromptReader::callback_timegap, this);  // bars
+  sub_spspeed = nh->subscribe("sp/target_speed", 10, &PromptReader::callback_spspeed, this);  // m/s
+  sub_spspeed200 = nh->subscribe("sp/target_speed_200", 10, &PromptReader::callback_spspeed200, this);  // m/s
+  sub_spspeed500 = nh->subscribe("sp/target_speed_500", 10, &PromptReader::callback_spspeed500, this);  // m/s
+  sub_spspeed1000 = nh->subscribe("sp/target_speed_1000", 10, &PromptReader::callback_spspeed1000, this);  // m/s
   sub_spmaxheadway = nh->subscribe("sp/max_headway", 10, &PromptReader::callback_spmaxheadway, this);
 
-  //Default values - ask about these
-  state_v.data = 0;
-  state_accel.data = 0;
+  state_v.data = 0;  // kph
+  state_accel.data = 0;  // m/s/s
   state_minicar.data = 0;
   state_timegap.data = 3;
-  state_setspeed.data = 60;
-  state_spspeed.data = 30;
-  state_spspeed200.data = 30;
-  state_spspeed500.data = 30;
-  state_spspeed1000.data = 30;
+  state_setspeed.data = 60;  // mph
+  state_spspeed.data = 30;  // m/s
+  state_spspeed200.data = 30;  // m/s
+  state_spspeed500.data = 30;  // m/s
+  state_spspeed1000.data = 30;  // m/s
   state_spmaxheadway.data = 0;
   if (!(nh->hasParam("SP_UNIT_TEST_FILE"))) {
     unit_test = 0;
@@ -103,14 +102,14 @@ PromptReader::PromptReader(ros::NodeHandle *nh, std::string onnx_model_nathan, s
 }
 
 void PromptReader::callback_v(const std_msgs::Float64& v_msg) {
-  state_v = v_msg;
-  prev_vels.insert(prev_vels.begin(), (float)v_msg.data);
+  state_v = v_msg / 3.6;  // convert kph to m/s
+  prev_vels.insert(prev_vels.begin(), (float)v_msg.data / 3.6);  // convert kph to m/s
   prev_vels.pop_back();
 }
 
 void PromptReader::callback_accel(const std_msgs::Float64& accel_msg) {
-  state_accel = accel_msg;
-  prev_accels.insert(prev_accels.begin(), (float)accel_msg.data);
+  state_accel = accel_msg;  // m/s/s
+  prev_accels.insert(prev_accels.begin(), (float)accel_msg.data);  // m/s/s
   prev_accels.pop_back();
 }
 
@@ -119,7 +118,7 @@ void PromptReader::callback_minicar(const std_msgs::Float64& minicar_msg) {
 }
 
 void PromptReader::callback_setspeed(const std_msgs::Int16& setspeed_msg) {
-  state_setspeed = setspeed_msg;
+  state_setspeed = setspeed_msg * 0.44704;  // convert mph to m/s
 }
 
 void PromptReader::callback_timegap(const std_msgs::Int16& timegap_msg) {
@@ -127,19 +126,19 @@ void PromptReader::callback_timegap(const std_msgs::Int16& timegap_msg) {
 }
 
 void PromptReader::callback_spspeed(const std_msgs::Float64& spspeed_msg) {
-  state_spspeed = spspeed_msg;
+  state_spspeed = spspeed_msg;  // m/s
 }
 
 void PromptReader::callback_spspeed200(const std_msgs::Float64& spspeed200_msg) {
-  state_spspeed200 = spspeed200_msg;
+  state_spspeed200 = spspeed200_msg;  // m/s
 }
 
 void PromptReader::callback_spspeed500(const std_msgs::Float64& spspeed500_msg) {
-  state_spspeed500 = spspeed500_msg;
+  state_spspeed500 = spspeed500_msg;  // m/s
 }
 
 void PromptReader::callback_spspeed1000(const std_msgs::Float64& spspeed1000_msg) {
-  state_spspeed1000 = spspeed1000_msg;
+  state_spspeed1000 = spspeed1000_msg;  // m/s
 }
 
 void PromptReader::callback_spmaxheadway(const std_msgs::Int16& spmaxheadway_msg) {
@@ -148,7 +147,7 @@ void PromptReader::callback_spmaxheadway(const std_msgs::Int16& spmaxheadway_msg
 
 int PromptReader::convertSpeedDataToMPH(double out) {
   out = clamp(out, -1.0, 1.0);
-  return static_cast<int>(clamp(static_cast<int>((out + 1.0) * 20.0 / 0.44704), 20, 80));
+  return static_cast<int>(clamp(static_cast<int>((out + 1.0) * 20.0 / 0.44704), 20, 80));  // mph
 }
 
 int PromptReader::convertGapDataToSetting(double out) {
@@ -171,7 +170,7 @@ void PromptReader::publish() {
     input_values.push_back(state_spspeed200.data / 40.0);
     input_values.push_back(state_spspeed500.data / 40.0);
     input_values.push_back(state_spspeed1000.data / 40.0);
-    input_values.push_back((float)(state_setspeed.data) / 0.44704 / 40.0);
+    input_values.push_back((float)(state_setspeed.data) / 40.0);
     input_values.push_back((float)(state_timegap.data) / 3.0);
     for (int i = 0; i < 10; i++) {
       input_values.push_back(prev_vels[i] / 40.0);
@@ -186,7 +185,7 @@ void PromptReader::publish() {
     input_values.push_back(state_minicar.data);
     input_values.push_back(state_spspeed.data / 40.0);
     input_values.push_back(state_spmaxheadway.data);
-    input_values.push_back(state_setspeed.data / 0.44704 / 40.0);
+    input_values.push_back(state_setspeed.data / 40.0);
     input_values.push_back(state_timegap.data / 3.0);
   }
 
@@ -248,9 +247,9 @@ void PromptReader::publish() {
       prev_req_vels_str.c_str(),
       prev_accels_str.c_str(),
       state_v.data / 40.0,
-      state_accel.data,
+      state_accel.data / 4.0,
       state_minicar.data,
-      (float)state_setspeed.data / 0.44704 / 40.0,
+      (float)state_setspeed.data / 40.0,
       (float)state_timegap.data / 3.0,
       state_spspeed.data / 40.0,
       state_spspeed200.data / 40.0,
