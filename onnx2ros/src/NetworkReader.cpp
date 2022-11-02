@@ -142,7 +142,7 @@ void PromptReader::callback_spspeed1000(const std_msgs::Float64& spspeed1000_msg
   state_spspeed1000 = spspeed1000_msg;
 }
 
-void PromptReader::callback_spmaxheadway(const std_msgs::Byte& spmaxheadway_msg) {
+void PromptReader::callback_spmaxheadway(const std_msgs::Int16& spmaxheadway_msg) {
   state_spmaxheadway = spmaxheadway_msg;
 }
 
@@ -226,7 +226,7 @@ void PromptReader::publish() {
     std::string prev_vels_str = prev_vels_ss.str();
     std::string prev_accels_str = prev_accels_ss.str();
     std::string prev_req_vels_str = prev_req_vels_ss.str();
-    fprintf(unit_test_file, "%s,%s,%s,%lf,%lf,%lf,%f,%i,%lf,%lf,%lf,%lf,%i,%li,%li\n",
+    fprintf(unit_test_file, "%s,%s,%s,%lf,%lf,%lf,%f,%i,%lf,%lf,%lf,%lf,%li,%li,%li\n",
       prev_vels_str.c_str(),
       prev_req_vels_str.c_str(),
       prev_accels_str.c_str(),
