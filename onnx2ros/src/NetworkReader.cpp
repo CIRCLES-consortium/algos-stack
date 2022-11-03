@@ -67,7 +67,7 @@ PromptReader::PromptReader(ros::NodeHandle *nh, std::string onnx_model_nathan, s
     BaseReader(nh, std::move(onnx_model_nathan), std::move(onnx_model_kathy)){
   pub_speed = nh->advertise<std_msgs::Int16>("target_speed_setting", 10);
   pub_gap = nh->advertise<std_msgs::Int16>("target_gap_setting", 10);
-  sub_v = nh->subscribe("vel", 10, &PromptReader::callback_v, this);  // kph
+  sub_v = nh->subscribe("vel", 10, &PromptReader::callback_v, this);  // m/s
   sub_accel = nh->subscribe("accel", 10, &PromptReader::callback_accel, this);  // m/s/s
   sub_minicar = nh->subscribe("mini_car", 10, &PromptReader::callback_minicar, this);
   sub_setspeed = nh->subscribe("acc/set_speed", 10, &PromptReader::callback_setspeed, this);  // mph
@@ -78,7 +78,7 @@ PromptReader::PromptReader(ros::NodeHandle *nh, std::string onnx_model_nathan, s
   sub_spspeed1000 = nh->subscribe("sp/target_speed_1000", 10, &PromptReader::callback_spspeed1000, this);  // m/s
   sub_spmaxheadway = nh->subscribe("sp/max_headway", 10, &PromptReader::callback_spmaxheadway, this);
 
-  state_v.data = 0;  // kph
+  state_v.data = 0;  // m/s
   state_accel.data = 0;  // m/s/s
   state_minicar.data = 0;
   state_timegap.data = 3;
@@ -115,8 +115,8 @@ PromptReader::PromptReader(ros::NodeHandle *nh, std::string onnx_model_nathan, s
 }
 
 void PromptReader::callback_v(const std_msgs::Float64& v_msg) {
-  state_v = v_msg;  // kph, to be converted to m/s
-  prev_vels.insert(prev_vels.begin(), (float)v_msg.data / 3.6);  // convert kph to m/s
+  state_v = v_msg;  // m/s
+  prev_vels.insert(prev_vels.begin(), (float)v_msg.data);  // m/s
   prev_vels.pop_back();
 }
 
@@ -173,7 +173,7 @@ void PromptReader::publish() {
   input_values.clear();
 
   if (state_spspeed.data < SPEED_THRESHOLD) { //Populate input fields for Nathan's controller
-    input_values.push_back(state_v.data / 3.6 / 40.0);
+    input_values.push_back(state_v.data / 40.0);
     for (int i = 0; i < 5; i++) {
       input_values.push_back(prev_accels[i] / 4.0);
     }
@@ -191,7 +191,7 @@ void PromptReader::publish() {
     }
   }
   else { //Populate fields for Kathy's controller
-    input_values.push_back(state_v.data / 3.6 / 40.0);
+    input_values.push_back(state_v.data / 40.0);
     for (int i = 0; i < 6; i++) {
       input_values.push_back(prev_accels[i] / 4.0);
     }
@@ -279,7 +279,7 @@ void PromptReader::publish() {
       prev_vels_str.c_str(),
       prev_req_vels_str.c_str(),
       prev_accels_str.c_str(),
-      state_v.data / 3.6 / 40.0,
+      state_v.data / 40.0,
       state_accel.data / 4.0,
       state_minicar.data,
       (float)state_setspeed.data * 0.44704 / 40.0,
