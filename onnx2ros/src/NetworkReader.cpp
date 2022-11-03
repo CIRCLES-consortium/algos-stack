@@ -220,7 +220,7 @@ void PromptReader::publish() {
         }
       }
     std::string input_print_str = input_print_ss.str();
-    std::cout << input_print_str << std::endl;
+    // std::cout << input_print_str << std::endl;
 
     fprintf(unit_test_file_kathy, "%s,%lf,%lf,%lf,%lf\n",
         input_print_str.c_str(),
@@ -274,7 +274,7 @@ void PromptReader::publish() {
     // std::cout << std::to_string(state_spmaxheadway.data) << " " << std::to_string(result[0]) << " " << std::to_string(result[1]) << std::endl;
     // std::cout << typeid(result[0]).name() << typeid(result[1]).name() << std::endl;
     // std::cout << typeid(state_spmaxheadway.data).name() << " " << typeid(state_spspeed200.data).name() << std::endl;
-    // std::cout << typeid(state_v.data).name() << " " << typeid(state_accel.data).name() << " " <<  typeid(state_minicar.data).name() << std::endl;
+    std::cout << typeid(msg_speed.data).name() << " " << typeid(msg_gap.data).name() << std::endl;
     fprintf(unit_test_file, "%s,%s,%s,%lf,%lf,%lf,%lf,%lf,%lf,%lf,%lf,%lf,%lf,%lf,%lf\n",
       prev_vels_str.c_str(),
       prev_req_vels_str.c_str(),
