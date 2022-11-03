@@ -109,7 +109,7 @@ PromptReader::PromptReader(ros::NodeHandle *nh, std::string onnx_model_nathan, s
     std::string unit_test_path;
     nh->getParam("SP_UNIT_TEST_FILE_KATHY", unit_test_path);
     unit_test_file_kathy = fopen(unit_test_path.c_str(), "w+");
-    fprintf(unit_test_file_kathy, "input_str,speed_setting,gap_setting\n");
+    fprintf(unit_test_file_kathy, "input_str,raw_speed_setting,raw_gap_setting,speed_setting,gap_setting\n");
   }
 
 }
@@ -207,9 +207,8 @@ void PromptReader::publish() {
   std::vector<double> result = PromptReader::forward(input_values);
 
   //Might need to swap these two values. Will check.
-  //REMOVED FOR DEBUG
-  // msg_speed.data = PromptReader::convertSpeedDataToMPH(result[0]);
-  // msg_gap.data = PromptReader::convertGapDataToSetting(result[1]);
+  msg_speed.data = PromptReader::convertSpeedDataToMPH(result[0]);
+  msg_gap.data = PromptReader::convertGapDataToSetting(result[1]);
 
   if (unit_test) {
     // <--- Additional DEBUG 
@@ -223,10 +222,12 @@ void PromptReader::publish() {
     std::string input_print_str = input_print_ss.str();
     std::cout << input_print_str << std::endl;
 
-    fprintf(unit_test_file_kathy, "%s,%lf,%lf\n",
+    fprintf(unit_test_file_kathy, "%s,%lf,%lf,%lf,%lf\n",
         input_print_str.c_str(),
         result[0],
-        result[1]);
+        result[1],
+        msg_speed.data,
+        msg_gap.data);
       fflush(unit_test_file_kathy);
     // --->
 
