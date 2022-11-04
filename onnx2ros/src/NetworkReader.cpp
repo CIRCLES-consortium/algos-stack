@@ -126,7 +126,7 @@ void PromptReader::callback_accel(const std_msgs::Float64& accel_msg) {
   prev_accels.pop_back();
 }
 
-void PromptReader::callback_minicar(const std_msgs::Float64& minicar_msg) {
+void PromptReader::callback_minicar(const std_msgs::Int16& minicar_msg) {
   state_minicar = minicar_msg;
 }
 

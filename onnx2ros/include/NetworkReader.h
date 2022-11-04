@@ -31,8 +31,8 @@ class BaseReader{
   std::vector<std::vector<int64_t>> input_shapes_nathan, input_shapes_kathy;
   std::vector<float> prev_vels, prev_req_vels, prev_accels;
   ros::Subscriber sub_v, sub_accel, sub_minicar, sub_setspeed, sub_timegap, sub_spspeed, sub_spspeed200, sub_spspeed500, sub_spspeed1000, sub_spmaxheadway;
-  std_msgs::Float64 state_v, state_accel, state_minicar, state_spspeed, state_spspeed200, state_spspeed500, state_spspeed1000;
-  std_msgs::Int16 state_spmaxheadway, state_setspeed, state_timegap;
+  std_msgs::Float64 state_v, state_accel, state_spspeed, state_spspeed200, state_spspeed500, state_spspeed1000;
+  std_msgs::Int16 state_spmaxheadway, state_setspeed, state_timegap, state_minicar;
   int unit_test;
   FILE* unit_test_file;
   FILE* unit_test_file_kathy;
@@ -51,7 +51,7 @@ class PromptReader : BaseReader{
 
   void callback_accel(const std_msgs::Float64& accel_msg);
 
-  void callback_minicar(const std_msgs::Float64& minicar_msg);
+  void callback_minicar(const std_msgs::Int16& minicar_msg);
 
   void callback_setspeed(const std_msgs::Int16& setspeed_msg);
 
