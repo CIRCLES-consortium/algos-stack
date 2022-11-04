@@ -150,12 +150,15 @@ def get_target_by_position(profile, x_pos, pub_at, dtype=float):
         result = profile[1][index]
     return result
 
-def main(gpsfile, i24_geo_file, circles_planner_file, myLat=None, myLong=None ):
+def main(gpsfile, i24_geo_file, circles_planner_file, myLat=None, myLong=None, nodename=None ):
     global inputLat
     global inputLong
     inputLat = myLat
     inputLong = myLong
-    rospy.init_node(name='circles_planner')
+    if nodename == None:
+        nodename = 'circles_planner'
+
+    rospy.init_node(name=nodename)
     global pos_pub
     pos_pub = rospy.Publisher('/xpos', Float64, queue_size=10)
     rospy.Subscriber('/is_westbound', Bool, wb_callback)
@@ -180,10 +183,14 @@ if __name__ == "__main__":
     gpsfile = '/etc/libpanda.d/latest_gps'
     i24_geo_file = '/etc/libpanda.d/i24_geo.json'
     circles_planner_file = '/etc/libpanda.d/speed_planner.json'
-    if len(sys.argv) > 2:
-        myLat = float(sys.argv[1])
-        myLong = float(sys.argv[2])
-        main(gpsfile, i24_geo_file, circles_planner_file, myLat, myLong)
+    if len(sys.argv) > 1:
+        nodename = sys.argv[1]
+        main(gpsfile, i24_geo_file, circles_planner_file, nodename)
+    if len(sys.argv) > 3:
+        nodename = sys.argv[1]
+        myLat = float(sys.argv[2])
+        myLong = float(sys.argv[3])
+        main(gpsfile, i24_geo_file, circles_planner_file, myLat, myLong, nodename)
     else:
         main(gpsfile, i24_geo_file, circles_planner_file)
 
