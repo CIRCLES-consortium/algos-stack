@@ -101,6 +101,10 @@ def getGPSLocation(filename):
 
 
 def getXposFromGPS(lat,long,i24_geo_file):
+    #if type(lat) == str:
+    #    print('Oh noes, my lat=',lat)
+    #if type(long) == str:
+    #    print('Oh noes, my long=',long)
     file = open(i24_geo_file)
     i24_geo = json.load(file)
     i24_index = getFix(i24_geo['latitude'], lat)
@@ -121,6 +125,12 @@ def getXposFromGPS(lat,long,i24_geo_file):
 def getFix(xprofile, x_pos):
     lowerIndex=0
     for i, x_i in enumerate(xprofile):
+        #rospy.debuginfo('The type of x_i is ',type(x_i),', and x_pos is ', type(x_pos))
+        x_i + x_pos
+        #if type(x_pos) == str:
+        #    print('Oh noes, my x_pos=',x_pos)
+        #if type(x_i) == str:
+        #    print('Oh noes, my x_i=',x_i)
         if x_i < x_pos:
             lowerIndex = i
         else:
@@ -140,7 +150,7 @@ def get_target_by_position(profile, x_pos, pub_at, dtype=float):
     print('size of profile[0]=',len(profile[0]))
     index = getFix(profile[0], x_pos)
     print('index result is ', index)
-    print('x_pos=',x_pos,', profile[0]=',profile[0])
+    # print('x_pos=',x_pos,', profile[0]=',profile[0])
     if x_pos >= profile[0][-1]:
         return profile[1][-1]
     elif x_pos <= profile[0][0]:
@@ -159,7 +169,7 @@ def main(gpsfile, i24_geo_file, circles_planner_file, myLat=None, myLong=None, n
     inputLat = myLat
     inputLong = myLong
     if nodename == None:
-        nodename = 'circles_planner'
+        nodename = 'publish_speed_plan'
 
     rospy.init_node(name=nodename)
     global pos_pub
@@ -186,15 +196,23 @@ if __name__ == "__main__":
     gpsfile = '/etc/libpanda.d/latest_gps'
     i24_geo_file = '/etc/libpanda.d/i24_geo.json'
     circles_planner_file = '/etc/libpanda.d/speed_planner.json'
-    if len(sys.argv) > 1:
-        nodename = sys.argv[1]
-        main(gpsfile, i24_geo_file, circles_planner_file, nodename)
-    if len(sys.argv) > 3:
-        nodename = sys.argv[1]
-        myLat = float(sys.argv[2])
-        myLong = float(sys.argv[3])
-        main(gpsfile, i24_geo_file, circles_planner_file, myLat, myLong, nodename)
-    else:
-        main(gpsfile, i24_geo_file, circles_planner_file)
+    #rospy.loginfo('==============================================================')
+    #rospy.loginfo('==============================================================')
+    #rospy.loginfo('==============================================================')
+    #print(sys.argv)
+    #rospy.loginfo('==============================================================')
+    #rospy.loginfo('==============================================================')
+    #rospy.loginfo('==============================================================')
+
+#    if len(sys.argv) > 3:
+#        nodename = sys.argv[1]
+#        myLat = float(sys.argv[2])
+#        myLong = float(sys.argv[3])
+#        main(gpsfile, i24_geo_file, circles_planner_file, myLat, myLong, nodename)
+#    else if len(sys.argv) > 1:
+#        nodename = sys.argv[1]
+#        main(gpsfile, i24_geo_file, circles_planner_file, nodename)
+#    else:
+    main(gpsfile, i24_geo_file, circles_planner_file)
 
 
