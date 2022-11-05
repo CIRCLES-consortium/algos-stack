@@ -32,9 +32,13 @@ def wb_callback(data):
 
     # HACK HACK HACK install westbound stuff soon
     # is_westbound=True
-    max_headway = Int16() 
-        
-    if not os.path.exists(circles_planner_file) or os.stat(circles_planner_file).st_size == 0 or not is_westbound:
+    max_headway = Int16()
+
+    # TODO: fix hard-coded lane number to vehicle's lane assignment
+    # lane_num = rospy.get_param("/LANE_NUM")
+    lane_num = 2
+
+    if not os.path.exists(circles_planner_file) or os.stat(circles_planner_file).st_size == 0 or not is_westbound or lane_num not in (2,3,4):
     #if not os.path.exists(circles_planner_file) or os.stat(file_path).st_size == 0 or not is_westbound:
         target_speed = 30
         target_speed_200 = 30
@@ -45,8 +49,7 @@ def wb_callback(data):
     else:
         speed_planner = json.loads(open(circles_planner_file).read())
         pub_at = ast.literal_eval(speed_planner[0]['published_at'])
-        # TODO: fix hard-coded lane number to vehicle's lane assignment
-        lane_num = 2
+
         pos_list = [ast.literal_eval(record['position']) for record in speed_planner if record['lane_num'] == str(lane_num)]
         # print('got pos_list {} at time {}'.format(pos_list, pub_at))
         speed_list = [ast.literal_eval(record['target_speed']) for record in speed_planner if record['lane_num'] == str(lane_num)]
