@@ -3,8 +3,7 @@
 int main(int argc, char **argv){
   ros::init(argc, argv, "onnx_controller");
   ros::NodeHandle nh;
-  std::string onnx_model_nathan;
-  std::string onnx_model_kathy;
+  std::string onnx_model_accel;
   nh.getParam("model_accel", onnx_model_accel);
   PromptReader reader = PromptReader(&nh, model_accel);
 

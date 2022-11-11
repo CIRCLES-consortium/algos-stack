@@ -119,10 +119,6 @@ void PromptReader::callback_accel(const std_msgs::Float64& accel_msg) {
   prev_accels.pop_back();
 }
 
-void PromptReader::callback_minicar(const std_msgs::Int16& minicar_msg) {
-  state_minicar = minicar_msg;
-}
-
 void PromptReader::callback_setspeed(const std_msgs::Int16& setspeed_msg) {
   state_setspeed = setspeed_msg;  // mph, to be converted to m/s
 }
@@ -133,18 +129,6 @@ void PromptReader::callback_timegap(const std_msgs::Int16& timegap_msg) {
 
 void PromptReader::callback_spspeed(const std_msgs::Float64& spspeed_msg) {
   state_spspeed = spspeed_msg;  // m/s
-}
-
-void PromptReader::callback_spspeed200(const std_msgs::Float64& spspeed200_msg) {
-  state_spspeed200 = spspeed200_msg;  // m/s
-}
-
-void PromptReader::callback_spspeed500(const std_msgs::Float64& spspeed500_msg) {
-  state_spspeed500 = spspeed500_msg;  // m/s
-}
-
-void PromptReader::callback_spspeed1000(const std_msgs::Float64& spspeed1000_msg) {
-  state_spspeed1000 = spspeed1000_msg;  // m/s
 }
 
 void PromptReader::callback_spmaxheadway(const std_msgs::Int16& spmaxheadway_msg) {
@@ -167,8 +151,7 @@ void PromptReader::publish() {
   input_values.push_back(state_spspeed.data / 40.0);
   input_values.push_back((float)state_spmaxheadway.data);
 
-  std_msgs::Int16 msg_speed;
-  std_msgs::Int16 msg_gap;
+  std_msgs::Int16 msg_accel;
   std::vector<double> result = PromptReader::forward(input_values);
 
   msg_accel.data =result[0];
