@@ -183,8 +183,8 @@ void PromptReader::publish() {
   }
   //"prev_vels,prev_accels,prev_req_vels,state_v,state_accel,state_minicar,state_setspeed,state_timegap,state_spspeed,state_spspeed200,state_spspeed500,state_spspeed1000,state_spmaxheadway,target_speed,target_gap\n");
 
-  prev_req_vels.insert(prev_req_vels.begin(), 0.44704*(float)msg_speed.data);
-  prev_req_vels.pop_back();
+  // prev_req_vels.insert(prev_req_vels.begin(), 0.44704*(float)msg_speed.data);
+  // prev_req_vels.pop_back();
 
   // pub_speed.publish(msg_speed);
   // pub_gap.publish(msg_gap);
