@@ -50,10 +50,17 @@ PromptReader::PromptReader(ros::NodeHandle *nh, std::string onnx_model_accel):
   // TODO: Add subscriptions
   pub_speed = nh->advertise<std_msgs::Int16>("target_speed_setting", 10);
   pub_gap = nh->advertise<std_msgs::Int16>("target_gap_setting", 10);
+  gap_closing_threshold = nh->advertise<std_msgs::Int16>("gap_closing_threshold", 6);
+  failsafe_threshold = nh->advertise<std_msgs::Int16>("failsafe_threshold", 35);
+
   sub_v = nh->subscribe("vel", 10, &PromptReader::callback_v, this);  // m/s
+  sub_leadvel = nh->subscribe("rel_vel", 10, &PromptReader::callback_leadvel, this);  // m/s
+  sub_headway = nh->subscribe("lead_dist", 10, &PromptReader::callback_headway, this);
   sub_accel = nh->subscribe("accel", 10, &PromptReader::callback_accel, this);  // m/s/s
   sub_setspeed = nh->subscribe("acc/set_speed", 10, &PromptReader::callback_setspeed, this);  // mph
   sub_timegap = nh->subscribe("acc/distance_setting", 10, &PromptReader::callback_timegap, this);  // bars
+  // sub_gapclosing = nh->subscribe("sp/target_speed", 10, &PromptReader::callback_spspeed, this);  // m/s
+  // sub_spspeed = nh->subscribe("sp/target_speed", 10, &PromptReader::callback_spspeed, this);  // m/s
   sub_spspeed = nh->subscribe("sp/target_speed", 10, &PromptReader::callback_spspeed, this);  // m/s
   sub_spmaxheadway = nh->subscribe("sp/max_headway", 10, &PromptReader::callback_spmaxheadway, this);
 
@@ -101,6 +108,16 @@ void PromptReader::callback_v(const std_msgs::Float64& v_msg) {
   state_v = v_msg;  // m/s
   prev_vels.insert(prev_vels.begin(), (float)v_msg.data);  // m/s
   prev_vels.pop_back();
+}
+
+callback_leadvel
+void PromptReader::callback_leadvel(const std_msgs::Float64& v_msg) { 
+  // TODO is this legit?
+  state_leadvel.data = v_msg.data + state_v.data
+}
+
+void PromptReader::callback_headway(const std_msgs::Float64& v_msg) {
+  state_headway = v_msg;  // m/s
 }
 
 void PromptReader::callback_accel(const std_msgs::Float64& accel_msg) {
