@@ -14,7 +14,6 @@ BaseReader::BaseReader(ros::NodeHandle *nh, std::string onnx_model_accel):
     env(ORT_LOGGING_LEVEL_WARNING, "network-reader"),
     session_accel(env, onnx_model_accel, session_options){
 
-  // TODO: Match this Nathan's state
   input_names_accel = session_accel.GetInputNames();
   output_names_accel = session_accel.GetOutputNames();
   input_shapes_accel = session_accel.GetInputShapes();
@@ -47,11 +46,8 @@ std::vector<double> BaseReader::forward(std::vector<float> input_values) {
 
 PromptReader::PromptReader(ros::NodeHandle *nh, std::string onnx_model_accel):
     BaseReader(nh, std::move(onnx_model_accel)){
-  // TODO: Add subscriptions
   pub_speed = nh->advertise<std_msgs::Int16>("target_speed_setting", 10);
   pub_gap = nh->advertise<std_msgs::Int16>("target_gap_setting", 10);
-  gap_closing_threshold = nh->advertise<std_msgs::Int16>("gap_closing_threshold", 6);
-  failsafe_threshold = nh->advertise<std_msgs::Int16>("failsafe_threshold", 35);
 
   sub_v = nh->subscribe("vel", 10, &PromptReader::callback_v, this);  // m/s
   sub_leadvel = nh->subscribe("rel_vel", 10, &PromptReader::callback_leadvel, this);  // m/s
@@ -59,8 +55,6 @@ PromptReader::PromptReader(ros::NodeHandle *nh, std::string onnx_model_accel):
   sub_accel = nh->subscribe("accel", 10, &PromptReader::callback_accel, this);  // m/s/s
   sub_setspeed = nh->subscribe("acc/set_speed", 10, &PromptReader::callback_setspeed, this);  // mph
   sub_timegap = nh->subscribe("acc/distance_setting", 10, &PromptReader::callback_timegap, this);  // bars
-  // sub_gapclosing = nh->subscribe("sp/target_speed", 10, &PromptReader::callback_spspeed, this);  // m/s
-  // sub_spspeed = nh->subscribe("sp/target_speed", 10, &PromptReader::callback_spspeed, this);  // m/s
   sub_spspeed = nh->subscribe("sp/target_speed", 10, &PromptReader::callback_spspeed, this);  // m/s
   sub_spmaxheadway = nh->subscribe("sp/max_headway", 10, &PromptReader::callback_spmaxheadway, this);
 
@@ -70,8 +64,8 @@ PromptReader::PromptReader(ros::NodeHandle *nh, std::string onnx_model_accel):
   state_v.data = 0;  // m/s
   state_leadvel.data = 0; // m/s
   state_headway.data = 0; // m
-  state_gap_closing_threshold.data = 0;
-  state_failsafe_threshold.data =  = 0;
+  state_gap_closing_threshold.data = 6;
+  state_failsafe_threshold.data =  = 35;
   // state_accel.data = 0;  // m/s/s
   // state_timegap.data = 3;
   // state_setspeed.data = 60;  // mph
@@ -110,10 +104,9 @@ void PromptReader::callback_v(const std_msgs::Float64& v_msg) {
   prev_vels.pop_back();
 }
 
-callback_leadvel
 void PromptReader::callback_leadvel(const std_msgs::Float64& v_msg) { 
   // TODO is this legit?
-  state_leadvel.data = v_msg.data + state_v.data
+  state_leadvel.data = v_msg.data + state_v.data;
 }
 
 void PromptReader::callback_headway(const std_msgs::Float64& v_msg) {
@@ -158,16 +151,6 @@ void PromptReader::callback_spmaxheadway(const std_msgs::Int16& spmaxheadway_msg
   state_spmaxheadway = spmaxheadway_msg;
 }
 
-int PromptReader::convertSpeedDataToMPH(double out) {
-  out = clamp(out, -1.0, 1.0);
-  return static_cast<int>(clamp(static_cast<int>((out + 1.0) * 20.0 / 0.44704), 20, 73));  // mph
-}
-
-int PromptReader::convertGapDataToSetting(double out) {
-  out = clamp(out, -1.0, 1.0);
-  return out > (1.0f / 3.0f) ? 1 : out > (-1.0f / 3.0f) ? 2 : 3;
-}
-
 void PromptReader::publish() {
   std::vector<float> input_values;
   input_values.clear();
@@ -188,9 +171,7 @@ void PromptReader::publish() {
   std_msgs::Int16 msg_gap;
   std::vector<double> result = PromptReader::forward(input_values);
 
-  //Might need to swap these two values. Will check.
-  msg_speed.data = PromptReader::convertSpeedDataToMPH(result[0]);
-  msg_gap.data = PromptReader::convertGapDataToSetting(result[1]);
+  msg_accel.data =result[0];
 
   if (unit_test) {
     // <--- Additional DEBUG 
@@ -206,9 +187,7 @@ void PromptReader::publish() {
     fprintf(unit_test_file_kathy, "%s,%lf,%lf,%lf,%lf\n",
         input_print_str.c_str(),
         result[0],
-        result[1],
-        (float)msg_speed.data,
-        (float)msg_gap.data);
+        (float)msg_accel.data);
       fflush(unit_test_file_kathy);
     // --->
 

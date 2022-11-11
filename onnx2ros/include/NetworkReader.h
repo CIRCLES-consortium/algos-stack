@@ -18,7 +18,6 @@
 #include <experimental_onnxruntime_cxx_api.h>
 #include <cstdio>
 
-// TODO Update this
 class BaseReader{
  protected:
   ros::NodeHandle *nh;
@@ -33,7 +32,7 @@ class BaseReader{
   // Goal state includes: this_vel, lead_vel, headway, gap_closing_threshold, failsafe_threshold, prev_vels[0]-[9], target_speed, max_headway
   // Added state_leadvel, state_headway, state_gap_closing_threshold, state_failsafe_threshold
   // Took out state_spspeed200-1000, state_minicar
-  ros::Subscriber sub_v, sub_accel, sub_setspeed, sub_timegap, sub_spspeed, sub_spmaxheadway;
+  ros::Subscriber sub_v, sub_leadvel, sub_headway, sub_accel, sub_setspeed, sub_timegap, sub_spspeed, sub_spmaxheadway;
   std_msgs::Float64 state_v, state_leadvel, state_headway, state_gap_closing_threshold, state_failsafe_threshold, state_accel, state_spspeed;
   std_msgs::Int16 state_spmaxheadway, state_setspeed, state_timegap;
   int unit_test;
@@ -51,6 +50,10 @@ class PromptReader : BaseReader{
   PromptReader(ros::NodeHandle *nh, std::string onnx_model_accel);
 
   void callback_v(const std_msgs::Float64& v_msg);
+  
+  void callback_leadvel(const std_msgs::Float64& v_msg);
+
+  void callback_headway(const std_msgs::Float64& v_msg);
 
   void callback_accel(const std_msgs::Float64& accel_msg);
 
