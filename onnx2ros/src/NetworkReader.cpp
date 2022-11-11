@@ -46,8 +46,8 @@ std::vector<double> BaseReader::forward(std::vector<float> input_values) {
 
 PromptReader::PromptReader(ros::NodeHandle *nh, std::string onnx_model_accel):
     BaseReader(nh, std::move(onnx_model_accel)){
-  pub_speed = nh->advertise<std_msgs::Int16>("target_speed_setting", 10);
-  pub_gap = nh->advertise<std_msgs::Int16>("target_gap_setting", 10);
+  // pub_speed = nh->advertise<std_msgs::Int16>("target_speed_setting", 10);
+  // pub_gap = nh->advertise<std_msgs::Int16>("target_gap_setting", 10);
 
   sub_v = nh->subscribe("vel", 10, &PromptReader::callback_v, this);  // m/s
   sub_leadvel = nh->subscribe("rel_vel", 10, &PromptReader::callback_leadvel, this);  // m/s
@@ -186,6 +186,6 @@ void PromptReader::publish() {
   prev_req_vels.insert(prev_req_vels.begin(), 0.44704*(float)msg_speed.data);
   prev_req_vels.pop_back();
 
-  pub_speed.publish(msg_speed);
-  pub_gap.publish(msg_gap);
+  // pub_speed.publish(msg_speed);
+  // pub_gap.publish(msg_gap);
 }
