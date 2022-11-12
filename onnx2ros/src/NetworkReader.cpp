@@ -48,6 +48,8 @@ PromptReader::PromptReader(ros::NodeHandle *nh, std::string onnx_model_accel):
     BaseReader(nh, std::move(onnx_model_accel)){
   // pub_speed = nh->advertise<std_msgs::Int16>("target_speed_setting", 10);
   // pub_gap = nh->advertise<std_msgs::Int16>("target_gap_setting", 10);
+  // TODO: Add cmd_accel and make sure type is right 
+  pub_accel = nh->advertise<std_msgs::Float64>("cmd_accel", 1000);
 
   sub_v = nh->subscribe("vel", 10, &PromptReader::callback_v, this);  // m/s
   sub_leadvel = nh->subscribe("rel_vel", 10, &PromptReader::callback_leadvel, this);  // m/s
@@ -187,4 +189,5 @@ void PromptReader::publish() {
 
   // pub_speed.publish(msg_speed);
   // pub_gap.publish(msg_gap);
+  pub_accel.publish(msg_accel);
 }
