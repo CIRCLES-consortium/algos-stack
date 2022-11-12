@@ -23,6 +23,7 @@ class BaseReader{
   ros::NodeHandle *nh;
   ros::Publisher pub_speed;
   ros::Publisher pub_gap;
+  ros::Publisher pub_accel;
   Ort::Env env;
   Ort::SessionOptions session_options;
   Ort::Experimental::Session session_accel;
