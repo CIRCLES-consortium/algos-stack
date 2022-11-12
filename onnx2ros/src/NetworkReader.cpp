@@ -4,6 +4,7 @@
 #include <algorithm>
 #include <cstdio>
 #include <sstream>
+#include <numeric>
 
 #define clamp(value,floor,ceiling) std::max(std::min((float)value,(float)ceiling),(float)floor)
 
@@ -214,9 +215,11 @@ void PromptReader::publish() {
 
   // pseudocode
   // TODO: what units are these in?
-  float avg_speed = std::reduce(prev_vels.begin(), prev_vels.end()) / 10;
-  std::cout << avg_speed << "\n";
-
+  float avg_speed = std::accumulate(prev_vels.begin(), prev_vels.end(), 0.0);
+  //std::cout << avg_speed << "\n";
+  float clamped_val;
+  clamped_val = clamp(clamped_val, avg_speed-15, avg_speed+15);
+  // std::cout << avg_speed << "and clamped val is: " << clamped_val << "\n";
   // msg_speed.data = clamp(avg_speed-15, avg_speed+15);
 
   if (unit_test) {
