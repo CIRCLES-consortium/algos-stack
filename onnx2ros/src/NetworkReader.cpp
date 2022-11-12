@@ -27,7 +27,7 @@ BaseReader::BaseReader(ros::NodeHandle *nh, std::string onnx_model_nathan, std::
   prev_vels.clear();
   prev_req_vels.clear();
   prev_accels.clear();
-  for (int i = 0; i < 40; i++) {
+  for (int i = 0; i < 10; i++) {
     prev_vels.push_back(0.0);
     prev_req_vels.push_back(0.0);
   }
@@ -217,7 +217,9 @@ void PromptReader::publish() {
   float avg_speed = std::accumulate(prev_vels.begin(), prev_vels.end(), 0.0);
   //std::cout << avg_speed << "\n";
   float clamped_val;
-  clamped_val = clamp(clamped_val, avg_speed-15, avg_speed+15);
+  int lower_bound {avg_speed - 5};
+  int upper_bound {avg_speed + 1};
+  clamped_val = clamp(clamped_val, lower_bound, upper_bound);
   msg_speed.data = clamped_val;
   // std::cout << avg_speed << "and clamped val is: " << clamped_val << "\n";
   // msg_speed.data = clamp(avg_speed-15, avg_speed+15);
