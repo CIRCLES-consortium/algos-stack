@@ -65,7 +65,7 @@ PromptReader::PromptReader(ros::NodeHandle *nh, std::string onnx_model_accel):
   state_leadvel.data = 0; // m/s
   state_headway.data = 0; // m
   state_gap_closing_threshold.data = 6;
-  state_failsafe_threshold.data =  = 35;
+  state_failsafe_threshold.data = 35;
   // state_accel.data = 0;  // m/s/s
   // state_timegap.data = 3;
   // state_setspeed.data = 60;  // mph
@@ -93,7 +93,7 @@ PromptReader::PromptReader(ros::NodeHandle *nh, std::string onnx_model_accel):
     std::string unit_test_path;
     nh->getParam("SP_UNIT_TEST_FILE_KATHY", unit_test_path);
     unit_test_file_kathy = fopen(unit_test_path.c_str(), "w+");
-    fprintf(unit_test_file_kathy, "input_str,raw_speed_setting,raw_gap_setting,speed_setting,gap_setting\n");
+    fprintf(unit_test_file_kathy, "input_str,accel\n");
   }
 
 }
@@ -166,11 +166,10 @@ void PromptReader::publish() {
         }
       }
     std::string input_print_str = input_print_ss.str();
-
-    fprintf(unit_test_file_kathy, "%s,%lf,%lf,%lf,%lf\n",
+ 
+    fprintf(unit_test_file_kathy, "%s,%lf\n",
         input_print_str.c_str(),
-        result[0],
-        (float)msg_accel.data);
+        result[0]);
       fflush(unit_test_file_kathy);
     // --->
 
