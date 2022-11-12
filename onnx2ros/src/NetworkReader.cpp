@@ -153,7 +153,7 @@ void PromptReader::publish() {
   input_values.push_back(state_spspeed.data / 40.0);
   input_values.push_back((float)state_spmaxheadway.data);
 
-  std_msgs::Int16 msg_accel;
+  std_msgs::Float64 msg_accel;
   std::vector<double> result = PromptReader::forward(input_values);
 
   msg_accel.data =result[0];
