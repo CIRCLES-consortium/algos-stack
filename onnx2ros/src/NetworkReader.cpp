@@ -212,6 +212,18 @@ void PromptReader::publish() {
   msg_speed.data = PromptReader::convertSpeedDataToMPH(result[0]);
   msg_gap.data = PromptReader::convertGapDataToSetting(result[1]);
 
+  // compute average past AV speed
+  float avg_speed = 0.0f;
+  int n_avg_speeds = 0;
+  for (float prev_vel : prev_vels) {
+    if (prev_vel > 1e-5) {
+      avg_speed += prev_vel;
+      n_avg_speeds++;
+    }
+  }
+  avg_speed /= n_avg_speeds;
+  // convert it from m/s to MPH
+  avg_speed = avg_speed / 0.44704;
 
 
   float avg_speed = std::accumulate(prev_vels.begin(), prev_vels.end(), 0.0) / prev_vels.size();
