@@ -163,7 +163,7 @@ def get_target_by_position(profile, x_pos, pub_at, dtype=float):
         result = profile[1][index]
     return result
 
-def main(gpsfile, i24_geo_file, circles_planner_file, myLat=None, myLong=None, nodename=None ):
+def main(gpsfile, i24_geo_file, circles_planner_file, lane_control_allowable_file, myLat=None, myLong=None, nodename=None ):
     global inputLat
     global inputLong
     inputLat = myLat
@@ -196,6 +196,7 @@ if __name__ == "__main__":
     gpsfile = '/etc/libpanda.d/latest_gps'
     i24_geo_file = '/etc/libpanda.d/i24_geo.json'
     circles_planner_file = '/etc/libpanda.d/speed_planner.json'
+    lane_control_allowable_file="/etc/libpanda.d/lane_control_allowable.json"
     #rospy.loginfo('==============================================================')
     #rospy.loginfo('==============================================================')
     #rospy.loginfo('==============================================================')
@@ -213,6 +214,6 @@ if __name__ == "__main__":
 #        nodename = sys.argv[1]
 #        main(gpsfile, i24_geo_file, circles_planner_file, nodename)
 #    else:
-    main(gpsfile, i24_geo_file, circles_planner_file)
+    main(gpsfile, i24_geo_file, circles_planner_file, lane_control_allowable_file)
 
 
