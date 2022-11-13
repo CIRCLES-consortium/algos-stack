@@ -234,7 +234,7 @@ void PromptReader::publish() {
   clamped_val = clamp(msg_speed.data, lower_bound, upper_bound);
   // std::cout << "NN output: " << msg_speed.data << " , avg_speed:  "  << avg_speed << " ,clamped val:  " << clamped_val << "\n";
   // std::cout << "Speed planner speed: " << state_spspeed.data << "\n";
-  msg_speed.data = clamped_val;
+  msg_speed.data = clamp(clamped_val, 20, 73);
   // std::cout << avg_speed << "and clamped val is: " << clamped_val << "\n";
   // msg_speed.data = clamp(avg_speed-15, avg_speed+15);
 
