@@ -173,10 +173,25 @@ void PromptReader::publish() {
   std::vector<float> input_values;
   input_values.clear();
 
+  // compute past accels estimate from past speeds
+  std::vector<float> prev_accels_fixed_noisy;
+  for (int i = 0; i < 10; i++) {
+    prev_accels_fixed_noisy.push_back(prev_vels[i] - prev_vels[i + 1]) / 0.1);
+  }
+  std::vector<float> prev_accels_fixed;
+  for (int i = 0; i < 6; i++) {
+    float a = 0;
+    for (int j = 0; j < 5; j++) {
+      a += prev_accels_fixed_noisy[i+j];
+    }
+    a /= 5.0f;
+    prev_accels_fixed.push_back(a);
+  }
+
   if (state_spspeed.data < SPEED_THRESHOLD) { //Populate input fields for Nathan's controller
     input_values.push_back(state_v.data / 40.0);
     for (int i = 0; i < 5; i++) {
-      input_values.push_back(prev_accels[i] / 4.0);
+      input_values.push_back(prev_accels_fixed[i] / 4.0);
     }
     input_values.push_back(state_minicar.data);
     input_values.push_back(state_spspeed.data / 40.0);
@@ -194,7 +209,7 @@ void PromptReader::publish() {
   else { //Populate fields for Kathy's controller
     input_values.push_back(state_v.data / 40.0);
     for (int i = 0; i < 6; i++) {
-      input_values.push_back(prev_accels[i] / 4.0);
+      input_values.push_back(prev_accels_fixed[i] / 4.0);
     }
     input_values.push_back(state_minicar.data);
     input_values.push_back(state_spspeed.data / 40.0);
@@ -275,16 +290,16 @@ void PromptReader::publish() {
       }
     }
 
-    if (prev_accels.size() == 6) {
+    if (prev_accels_fixed.size() == 6) {
       for (int i = 0; i < 6; i++) {
-        prev_accels_ss << prev_accels[i] / 4.0;
+        prev_accels_ss << prev_accels_fixed[i] / 4.0;
         if (i != 5) {
           prev_accels_ss << ' ';
         }
       }
     } else {
       for (int i = 0; i < 5; i++) {
-        prev_accels_ss << prev_accels[i];
+        prev_accels_ss << prev_accels_fixed[i];
         if (i != 4) {
           prev_accels_ss << ' ';
         }
