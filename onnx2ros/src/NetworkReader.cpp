@@ -214,7 +214,7 @@ void PromptReader::publish() {
 
 
 
-  float avg_speed = std::accumulate(prev_vels.begin(), prev_vels.end(), 0.0);
+  float avg_speed = std::accumulate(prev_vels.begin(), prev_vels.end(), 0.0) / prev_vels.size();
   //std::cout << avg_speed << "\n";
   float clamped_val;
   float lower_bound {avg_speed - 15.0};
