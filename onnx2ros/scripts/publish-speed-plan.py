@@ -219,7 +219,7 @@ def main(gpsfile, i24_geo_file, circles_planner_file, lane_control_allowable_fil
         if not os.path.exists(lane_control_allowable_file):
             control_allowable.data = False
         else:
-            control_allowable.data = check_if_control_allowable(lane_control_file) and preliminary_controls_allowed
+            control_allowable.data = check_if_control_allowable(lane_control_allowable_file) and preliminary_controls_allowed
         rospy.set_param('SP_CONTROL_ALLOWABLE', control_allowable.data)
         sp_control_allowable.publish(control_allowable)
         print("Loop result for speed planner: ", control_allowable.data, rospy.is_shutdown())
