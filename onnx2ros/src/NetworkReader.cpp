@@ -226,12 +226,14 @@ void PromptReader::publish() {
   avg_speed = avg_speed / 0.44704;
 
 
-  float avg_speed = std::accumulate(prev_vels.begin(), prev_vels.end(), 0.0) / prev_vels.size();
+  // float avg_speed = std::accumulate(prev_vels.begin(), prev_vels.end(), 0.0) / prev_vels.size();
   //std::cout << avg_speed << "\n";
   float clamped_val;
   float lower_bound {avg_speed - 15.0};
   float upper_bound {avg_speed + 5.0};
   clamped_val = clamp(msg_speed.data, lower_bound, upper_bound);
+  // std::cout << "NN output: " << msg_speed.data << " , avg_speed:  "  << avg_speed << " ,clamped val:  " << clamped_val << "\n";
+  // std::cout << "Speed planner speed: " << state_spspeed.data << "\n";
   msg_speed.data = clamped_val;
   // std::cout << avg_speed << "and clamped val is: " << clamped_val << "\n";
   // msg_speed.data = clamp(avg_speed-15, avg_speed+15);
