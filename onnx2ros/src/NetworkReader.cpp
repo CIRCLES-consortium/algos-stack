@@ -221,7 +221,9 @@ void PromptReader::publish() {
       n_avg_speeds++;
     }
   }
-  avg_speed /= n_avg_speeds;
+  if (n_avg_speeds > 0) {
+    avg_speed /= n_avg_speeds;
+  }
   // convert it from m/s to MPH
   avg_speed = avg_speed / 0.44704;
 
