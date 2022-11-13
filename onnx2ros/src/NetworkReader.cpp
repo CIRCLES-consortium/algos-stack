@@ -173,17 +173,17 @@ void PromptReader::publish() {
   std::vector<float> input_values;
   input_values.clear();
 
-  if (true) { // TMP state_spspeed.data < SPEED_THRESHOLD) { //Populate input fields for Nathan's controller
+  if (state_spspeed.data < SPEED_THRESHOLD) { //Populate input fields for Nathan's controller
     input_values.push_back(state_v.data / 40.0);
     for (int i = 0; i < 5; i++) {
       input_values.push_back(prev_accels[i] / 4.0);
     }
-    input_values.push_back(1.0f); // TMP state_minicar.data);
-    input_values.push_back(10.0f / 40.0f); // TMP state_spspeed.data / 40.0);
-    input_values.push_back(0.0f); // TMP (float)state_spmaxheadway.data);
-    input_values.push_back(10.0f / 40.0f); // TMP state_spspeed200.data / 40.0);
-    input_values.push_back(10.0f / 40.0f); // TMP state_spspeed500.data / 40.0);
-    input_values.push_back(10.0f / 40.0f); // TMP state_spspeed1000.data / 40.0);
+    input_values.push_back(state_minicar.data);
+    input_values.push_back(state_spspeed.data / 40.0);
+    input_values.push_back((float)state_spmaxheadway.data);
+    input_values.push_back(state_spspeed200.data / 40.0);
+    input_values.push_back(state_spspeed500.data / 40.0);
+    input_values.push_back(state_spspeed1000.data / 40.0);
     input_values.push_back((float)(state_setspeed.data) * 0.44704 / 40.0);
     input_values.push_back((float)(state_timegap.data) / 3.0);
     for (int i = 0; i < 10; i++) {
