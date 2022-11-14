@@ -247,8 +247,8 @@ void PromptReader::publish() {
   // float avg_speed = std::accumulate(prev_vels.begin(), prev_vels.end(), 0.0) / prev_vels.size();
   //std::cout << avg_speed << "\n";
   // float clamped_val;
-  // float lower_bound {avg_speed - 15.0};
-  // float upper_bound {avg_speed + 5.0};
+  float lower_bound {avg_speed - 15.0};
+  float upper_bound {avg_speed + 5.0};
   // clamped_val = clamp(msg_speed.data, lower_bound, upper_bound);
 
   double temp {};
@@ -256,7 +256,8 @@ void PromptReader::publish() {
   temp = (temp + 1.0) * 20.0 / 0.44704; // now in MPH
   temp = clamp(temp, lower_bound, upper_bound);
   temp = clamp(static_cast<int>(temp), 20, 73);
-  
+  // #define clamp(value,floor,ceiling) std::max(std::min((float)value,(float)ceiling),(float)floor)
+
   msg_speed.data = temp;
   msg_gap.data = PromptReader::convertGapDataToSetting(result[1]);
   // std::cout << "NN output: " << msg_speed.data << " , avg_speed:  "  << avg_speed << " ,clamped val:  " << clamped_val << "\n";
