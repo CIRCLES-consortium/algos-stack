@@ -176,7 +176,7 @@ void PromptReader::publish() {
   // compute past accels estimate from past speeds
   std::vector<float> prev_accels_fixed_noisy;
   for (int i = 0; i < 9; i++) {
-    prev_accels_fixed_noisy.push_back(prev_vels[i] - prev_vels[i + 1]) / 0.1);
+    prev_accels_fixed_noisy.push_back((prev_vels[i] - prev_vels[i + 1]) / 0.1);
   }
   std::vector<float> prev_accels_fixed;
   for (int i = 0; i < 6; i++) {
