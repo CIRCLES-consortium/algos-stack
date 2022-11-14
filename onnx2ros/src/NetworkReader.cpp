@@ -4,6 +4,7 @@
 #include <algorithm>
 #include <cstdio>
 #include <sstream>
+#include <numeric>
 
 #define clamp(value,floor,ceiling) std::max(std::min((float)value,(float)ceiling),(float)floor)
 
@@ -207,8 +208,21 @@ void PromptReader::publish() {
   std::vector<double> result = PromptReader::forward(input_values);
 
   //Might need to swap these two values. Will check.
+  // TODO Process this more?
   msg_speed.data = PromptReader::convertSpeedDataToMPH(result[0]);
   msg_gap.data = PromptReader::convertGapDataToSetting(result[1]);
+
+
+
+  float avg_speed = std::accumulate(prev_vels.begin(), prev_vels.end(), 0.0);
+  //std::cout << avg_speed << "\n";
+  float clamped_val;
+  int lower_bound {avg_speed - 5};
+  int upper_bound {avg_speed + 1};
+  clamped_val = clamp(clamped_val, lower_bound, upper_bound);
+  msg_speed.data = clamped_val;
+  // std::cout << avg_speed << "and clamped val is: " << clamped_val << "\n";
+  // msg_speed.data = clamp(avg_speed-15, avg_speed+15);
 
   if (unit_test) {
     // <--- Additional DEBUG 

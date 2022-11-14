@@ -10,11 +10,18 @@ from std_msgs.msg import Int16, Float64, Bool
 
 
 is_westbound = False
+preliminary_controls_allowed = False
 can_update_time = None
+
+def preliminary_controls_allowed_callback(data):
+    global preliminary_controls_allowed
+    preliminary_controls_allowed = data.data
 
 def wb_callback(data):
     global is_westbound
+    #global preliminary_controls_allowed
     global can_update_time
+
     is_westbound = data.data
     can_update_time = rospy.Time.now()
 
@@ -33,6 +40,7 @@ def wb_callback(data):
     # HACK HACK HACK install westbound stuff soon
     # is_westbound=True
     max_headway = Int16()
+    #control_allowable = Bool()
 
     # TODO: fix hard-coded lane number to vehicle's lane assignment
     # lane_num = rospy.get_param("/LANE_NUM")
@@ -45,6 +53,7 @@ def wb_callback(data):
         target_speed_500 = 30
         target_speed_1000 = 30
         max_headway.data = 0
+        #control_allowable.data = False
         print('Printing default message, sWestbound=', is_westbound,' or maybe missing file ', circles_planner_file)
     else:
         speed_planner = json.loads(open(circles_planner_file).read())
@@ -60,6 +69,7 @@ def wb_callback(data):
         target_speed_500 = get_target_by_position([pos_list, speed_list], xpos+500, pub_at, dtype=float)
         target_speed_1000 = get_target_by_position([pos_list, speed_list], xpos+1000, pub_at, dtype=float)
         max_headway.data = get_target_by_position([pos_list, headway_list], xpos, pub_at, dtype=int)
+        #control_allowable.data = check_if_control_allowable(lane_control_file) and preliminary_controls_allowed
         print('Speed Planner targets: {} m/s, {} gap.'.format(target_speed, 'open' if max_headway else 'close'))
 
         # import subprocess
@@ -79,12 +89,21 @@ def wb_callback(data):
     rospy.set_param('SP_TARGET_SPEED_500', target_speed_500 )
     rospy.set_param('SP_TARGET_SPEED_1000', target_speed_1000 )
     rospy.set_param('SP_MAX_HEADWAY', max_headway.data )
+    #rospy.set_param('SP_CONTROL_ALLOWABLE', control_allowable.data)
     
     sp_speed.publish(target_speed)
     sp_speed_200.publish(target_speed_200)
     sp_speed_500.publish(target_speed_500)
     sp_speed_1000.publish(target_speed_1000)
     sp_headway.publish(max_headway)
+    #sp_control_allowable.publish(control_allowable)
+
+def check_if_control_allowable(filename):
+    data = json.loads(open(filename).read())
+    allowable_str = data['ctrl_allowed']
+    print("Current allowable_str: ", allowable_str)
+    sys.stdout.flush()
+    return int(allowable_str) > 0
 
 def getGPSLocation(filename):
     """Returns lat,long as a pair. If fix is not A, then return None"""
@@ -163,7 +182,7 @@ def get_target_by_position(profile, x_pos, pub_at, dtype=float):
         result = profile[1][index]
     return result
 
-def main(gpsfile, i24_geo_file, circles_planner_file, myLat=None, myLong=None, nodename=None ):
+def main(gpsfile, i24_geo_file, circles_planner_file, lane_control_allowable_file, myLat=None, myLong=None, nodename=None ):
     global inputLat
     global inputLong
     inputLat = myLat
@@ -175,27 +194,46 @@ def main(gpsfile, i24_geo_file, circles_planner_file, myLat=None, myLong=None, n
     global pos_pub
     pos_pub = rospy.Publisher('/xpos', Float64, queue_size=10)
     rospy.Subscriber('/is_westbound', Bool, wb_callback)
+    rospy.Subscriber('/car/libpanda/controls_allowed_preliminary', Bool, preliminary_controls_allowed_callback)
 
     global sp_speed
     global sp_speed_200
     global sp_speed_500
     global sp_speed_1000
     global sp_headway
+    global sp_control_allowable
 
     sp_speed = rospy.Publisher('/sp/target_speed', Float64, queue_size=10)
     sp_speed_200 = rospy.Publisher('/sp/target_speed_200', Float64, queue_size=10)
     sp_speed_500 = rospy.Publisher('/sp/target_speed_500', Float64, queue_size=10)
     sp_speed_1000 = rospy.Publisher('/sp/target_speed_1000', Float64, queue_size=10)
     sp_headway = rospy.Publisher('/sp/max_headway', Int16, queue_size=10)
+    sp_control_allowable = rospy.Publisher('/car/libpanda/controls_allowed', Bool, queue_size=10)
 
+    print("Speed planner looping!", rospy.is_shutdown())
+    sys.stdout.flush()
+    r = rospy.Rate(10)
     while not rospy.is_shutdown():
-        rospy.spin()
+        global preliminary_controls_allowed
+        control_allowable = Bool()
+        if not os.path.exists(lane_control_allowable_file):
+            control_allowable.data = False
+        else:
+            control_allowable.data = check_if_control_allowable(lane_control_allowable_file) and preliminary_controls_allowed
+        rospy.set_param('SP_CONTROL_ALLOWABLE', control_allowable.data)
+        sp_control_allowable.publish(control_allowable)
+        print("Loop result for speed planner: ", control_allowable.data, rospy.is_shutdown())
+        sys.stdout.flush()
+        r.sleep()
+    print("Speed planner exiting!")
+    sys.stdout.flush()
 
 if __name__ == "__main__":
     # TODO: make these cmd line params but use these as defaults
     gpsfile = '/etc/libpanda.d/latest_gps'
     i24_geo_file = '/etc/libpanda.d/i24_geo.json'
     circles_planner_file = '/etc/libpanda.d/speed_planner.json'
+    lane_control_allowable_file="/etc/libpanda.d/lane_control_allowable.json"
     #rospy.loginfo('==============================================================')
     #rospy.loginfo('==============================================================')
     #rospy.loginfo('==============================================================')
@@ -213,6 +251,6 @@ if __name__ == "__main__":
 #        nodename = sys.argv[1]
 #        main(gpsfile, i24_geo_file, circles_planner_file, nodename)
 #    else:
-    main(gpsfile, i24_geo_file, circles_planner_file)
+    main(gpsfile, i24_geo_file, circles_planner_file, lane_control_allowable_file)
 
 
