@@ -209,8 +209,25 @@ void PromptReader::publish() {
 
   //Might need to swap these two values. Will check.
   // TODO Process this more?
-  msg_speed.data = PromptReader::convertSpeedDataToMPH(result[0]);
-  msg_gap.data = PromptReader::convertGapDataToSetting(result[1]);
+  // # clamp between -1 and 1
+  // # avg speed clamp 
+  // # then convertspeeddata
+
+  // int PromptReader::convertSpeedDataToMPH(double out) {
+  //   out = clamp(out, -1.0, 1.0);
+    // return static_cast<int>(clamp(static_cast<int>((out + 1.0) * 20.0 / 0.44704), 20, 73));  // mph
+  // }
+  // double temp {};
+  // temp = clamp(result[0], -1.0, 1.0);
+  // temp = (temp + 1.0) * 20.0 / 0.44704; // now in MPH
+  // temp = clamp()
+  
+
+
+
+
+  // msg_speed.data = PromptReader::convertSpeedDataToMPH(result[0]);
+  // msg_gap.data = PromptReader::convertGapDataToSetting(result[1]);
 
   // compute average past AV speed
   float avg_speed = 0.0f;
@@ -227,16 +244,24 @@ void PromptReader::publish() {
   // convert it from m/s to MPH
   avg_speed = avg_speed / 0.44704;
 
-
   // float avg_speed = std::accumulate(prev_vels.begin(), prev_vels.end(), 0.0) / prev_vels.size();
   //std::cout << avg_speed << "\n";
-  float clamped_val;
-  float lower_bound {avg_speed - 15.0};
-  float upper_bound {avg_speed + 5.0};
-  clamped_val = clamp(msg_speed.data, lower_bound, upper_bound);
+  // float clamped_val;
+  // float lower_bound {avg_speed - 15.0};
+  // float upper_bound {avg_speed + 5.0};
+  // clamped_val = clamp(msg_speed.data, lower_bound, upper_bound);
+
+  double temp {};
+  temp = clamp(result[0], -1.0, 1.0);
+  temp = (temp + 1.0) * 20.0 / 0.44704; // now in MPH
+  temp = clamp(temp, lower_bound, upper_bound);
+  temp = clamp(static_cast<int>(temp), 20, 73);
+  
+  msg_speed.data = temp;
+  msg_gap.data = PromptReader::convertGapDataToSetting(result[1]);
   // std::cout << "NN output: " << msg_speed.data << " , avg_speed:  "  << avg_speed << " ,clamped val:  " << clamped_val << "\n";
   // std::cout << "Speed planner speed: " << state_spspeed.data << "\n";
-  msg_speed.data = clamped_val;
+  // msg_speed.data = clamped_val;
   // std::cout << avg_speed << "and clamped val is: " << clamped_val << "\n";
   // msg_speed.data = clamp(avg_speed-15, avg_speed+15);
 
