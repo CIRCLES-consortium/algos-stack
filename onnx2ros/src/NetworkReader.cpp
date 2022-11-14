@@ -28,8 +28,8 @@ BaseReader::BaseReader(ros::NodeHandle *nh, std::string onnx_model_nathan, std::
   prev_req_vels.clear();
   prev_accels.clear();
   for (int i = 0; i < 10; i++) {
-    prev_vels.push_back(0.0);
-    prev_req_vels.push_back(0.0);
+    prev_vels.push_back(-1.0);
+    prev_req_vels.push_back(-1.0);
   }
   for (int i = 0; i < 6; i++) {
     prev_accels.push_back(0.0);
@@ -216,12 +216,14 @@ void PromptReader::publish() {
   float avg_speed = 0.0f;
   int n_avg_speeds = 0;
   for (float prev_vel : prev_vels) {
-    if (prev_vel > 1e-5) {
+    if (prev_vel > 0.0) {
       avg_speed += prev_vel;
       n_avg_speeds++;
     }
   }
-  avg_speed /= n_avg_speeds;
+  if (n_avg_speeds > 0) {
+    avg_speed /= n_avg_speeds;
+  }
   // convert it from m/s to MPH
   avg_speed = avg_speed / 0.44704;
 
