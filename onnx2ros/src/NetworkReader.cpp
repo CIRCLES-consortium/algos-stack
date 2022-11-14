@@ -28,8 +28,8 @@ BaseReader::BaseReader(ros::NodeHandle *nh, std::string onnx_model_nathan, std::
   prev_req_vels.clear();
   prev_accels.clear();
   for (int i = 0; i < 10; i++) {
-    prev_vels.push_back(0.0);
-    prev_req_vels.push_back(0.0);
+    prev_vels.push_back(-1.0);
+    prev_req_vels.push_back(-1.0);
   }
   for (int i = 0; i < 6; i++) {
     prev_accels.push_back(0.0);
@@ -207,36 +207,35 @@ void PromptReader::publish() {
   std_msgs::Int16 msg_gap;
   std::vector<double> result = PromptReader::forward(input_values);
 
-  //Might need to swap these two values. Will check.
-  // TODO Process this more?
-  msg_speed.data = PromptReader::convertSpeedDataToMPH(result[0]);
-  msg_gap.data = PromptReader::convertGapDataToSetting(result[1]);
-
   // compute average past AV speed
   float avg_speed = 0.0f;
   int n_avg_speeds = 0;
   for (float prev_vel : prev_vels) {
-    if (prev_vel > 1e-5) {
+    if (prev_vel > 0.0) {
       avg_speed += prev_vel;
       n_avg_speeds++;
     }
   }
-  avg_speed /= n_avg_speeds;
-  // convert it from m/s to MPH
-  avg_speed = avg_speed / 0.44704;
+  if (n_avg_speeds > 0) {
+    avg_speed /= n_avg_speeds;
+  }
 
-
-  // float avg_speed = std::accumulate(prev_vels.begin(), prev_vels.end(), 0.0) / prev_vels.size();
+  avg_speed = avg_speed / 0.44704; // convert it from m/s to MPH
   //std::cout << avg_speed << "\n";
-  float clamped_val;
   float lower_bound {avg_speed - 15.0};
   float upper_bound {avg_speed + 5.0};
-  clamped_val = clamp(msg_speed.data, lower_bound, upper_bound);
+
+  double temp {};
+  temp = clamp(result[0], -1.0, 1.0);
+  temp = (temp + 1.0) * 20.0 / 0.44704; // now in MPH
+  temp = clamp(temp, lower_bound, upper_bound);
+  temp = clamp(static_cast<int>(temp), 20, 73);
+
+  msg_speed.data = temp;
+  msg_gap.data = PromptReader::convertGapDataToSetting(result[1]);
   // std::cout << "NN output: " << msg_speed.data << " , avg_speed:  "  << avg_speed << " ,clamped val:  " << clamped_val << "\n";
   // std::cout << "Speed planner speed: " << state_spspeed.data << "\n";
-  msg_speed.data = clamped_val;
   // std::cout << avg_speed << "and clamped val is: " << clamped_val << "\n";
-  // msg_speed.data = clamp(avg_speed-15, avg_speed+15);
 
   if (unit_test) {
     // <--- Additional DEBUG 
