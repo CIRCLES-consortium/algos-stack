@@ -9,7 +9,7 @@ import time
 from std_msgs.msg import Int16, Float64, Bool
 
 
-is_westbound = False
+is_westbound = -1
 can_update_time = None
 
 def wb_callback(data):
@@ -221,7 +221,7 @@ def main(gpsfile, i24_geo_file, circles_planner_file, lane_control_allowable_fil
         control_request.data = False # TODO FIX temporary solution (ALWAYS setting control allowable to true)
         if os.path.exists(lane_control_allowable_file):
             (control_allowable_value, lane_num_value) = get_lane_control_file(lane_control_allowable_file)
-            control_request.data = control_allowable_value
+            control_request.data = control_allowable_value and (is_westbound == 1)
             lane_num_msg.data = lane_num_value
         rospy.set_param('SP_CONTROL_REQUEST', control_request.data)
         sp_control_request.publish(control_request)
