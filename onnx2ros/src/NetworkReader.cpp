@@ -92,7 +92,7 @@ PromptReader::PromptReader(ros::NodeHandle *nh, std::string onnx_model_nathan, s
   state_spspeed500.data = 30;  // m/s
   state_spspeed1000.data = 30;  // m/s
   state_spmaxheadway.data = 0;
-  gps_fix.data = 0;
+  // gps_fix.data = 0;
   is_westbound.data = 0;
 
   if (!(nh->hasParam("SP_UNIT_TEST_FILE"))) {
