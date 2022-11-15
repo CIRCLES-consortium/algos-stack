@@ -9,12 +9,14 @@ import time
 from std_msgs.msg import Int16, Float64, Bool
 
 
-is_westbound = False
+is_westbound = -1
 can_update_time = None
 
 def wb_callback(data):
     global is_westbound
+    #global preliminary_controls_allowed
     global can_update_time
+
     is_westbound = data.data
     can_update_time = rospy.Time.now()
 
@@ -36,9 +38,9 @@ def wb_callback(data):
 
     # TODO: fix hard-coded lane number to vehicle's lane assignment
     # lane_num = rospy.get_param("/LANE_NUM")
-    lane_num = 2
+    lane_num = rospy.get_param('SP_LANE_NUM')
 
-    if not os.path.exists(circles_planner_file) or os.stat(circles_planner_file).st_size == 0 or not is_westbound or lane_num not in (2,3,4):
+    if not os.path.exists(circles_planner_file) or os.stat(circles_planner_file).st_size == 0 or is_westbound == -1 or lane_num not in (2,3,4):
     #if not os.path.exists(circles_planner_file) or os.stat(file_path).st_size == 0 or not is_westbound:
         target_speed = 30
         target_speed_200 = 30
@@ -46,6 +48,13 @@ def wb_callback(data):
         target_speed_1000 = 30
         max_headway.data = 0
         print('Printing default message, sWestbound=', is_westbound,' or maybe missing file ', circles_planner_file)
+    elif is_westbound == 0:  # Side street (neither east nor west)
+        target_speed = 10
+        target_speed_200 = 10
+        target_speed_500 = 10
+        target_speed_1000 = 10
+        max_headway.data = 1
+        print('On a side street, speed planner limited to 15')
     else:
         speed_planner = json.loads(open(circles_planner_file).read())
         pub_at = ast.literal_eval(speed_planner[0]['published_at'])
@@ -86,6 +95,18 @@ def wb_callback(data):
     sp_speed_1000.publish(target_speed_1000)
     sp_headway.publish(max_headway)
 
+def get_lane_control_file(filename):
+    with open(filename, "r") as f:    
+        try:
+            data = json.load(f)
+            allowable_str = data['ctrl_allowed']
+            lane_num_str = data['lane_num']
+            print("Current allowable_str, lane_num_str: ({}, {}), {}".format(allowable_str, lane_num_str, data))
+            return (int(allowable_str) > 0, int(lane_num_str))
+        except Exception as e:
+            print(e)
+            return (False, 2)
+
 def getGPSLocation(filename):
     """Returns lat,long as a pair. If fix is not A, then return None"""
     file = open('/etc/libpanda.d/latest_gps')
@@ -98,7 +119,6 @@ def getGPSLocation(filename):
         lat = float(vals[2])
         long = float(vals[3])
     return lat,long
-
 
 def getXposFromGPS(lat,long,i24_geo_file):
     #if type(lat) == str:
@@ -163,7 +183,7 @@ def get_target_by_position(profile, x_pos, pub_at, dtype=float):
         result = profile[1][index]
     return result
 
-def main(gpsfile, i24_geo_file, circles_planner_file, myLat=None, myLong=None, nodename=None ):
+def main(gpsfile, i24_geo_file, circles_planner_file, lane_control_allowable_file, myLat=None, myLong=None, nodename=None ):
     global inputLat
     global inputLong
     inputLat = myLat
@@ -174,28 +194,51 @@ def main(gpsfile, i24_geo_file, circles_planner_file, myLat=None, myLong=None, n
     rospy.init_node(name=nodename)
     global pos_pub
     pos_pub = rospy.Publisher('/xpos', Float64, queue_size=10)
-    rospy.Subscriber('/is_westbound', Bool, wb_callback)
+    rospy.Subscriber('/is_westbound', Int16, wb_callback)
 
     global sp_speed
     global sp_speed_200
     global sp_speed_500
     global sp_speed_1000
     global sp_headway
+    global sp_control_request
 
     sp_speed = rospy.Publisher('/sp/target_speed', Float64, queue_size=10)
     sp_speed_200 = rospy.Publisher('/sp/target_speed_200', Float64, queue_size=10)
     sp_speed_500 = rospy.Publisher('/sp/target_speed_500', Float64, queue_size=10)
     sp_speed_1000 = rospy.Publisher('/sp/target_speed_1000', Float64, queue_size=10)
     sp_headway = rospy.Publisher('/sp/max_headway', Int16, queue_size=10)
+    sp_lanenum = rospy.Publisher('/sp/lane_num', Int16, queue_size=10)
+    sp_control_request = rospy.Publisher('/car/libpanda/control_request', Bool, queue_size=10)
 
+    print("Speed planner looping!", rospy.is_shutdown())
+    sys.stdout.flush()
+    r = rospy.Rate(10)
     while not rospy.is_shutdown():
-        rospy.spin()
+        control_request = Bool()
+        lane_num_msg = Int16()
+        lane_num_msg.data = 2
+        control_request.data = False # TODO FIX temporary solution (ALWAYS setting control allowable to true)
+        if os.path.exists(lane_control_allowable_file):
+            (control_allowable_value, lane_num_value) = get_lane_control_file(lane_control_allowable_file)
+            control_request.data = control_allowable_value and (is_westbound == 1)
+            lane_num_msg.data = lane_num_value
+        rospy.set_param('SP_CONTROL_REQUEST', control_request.data)
+        sp_control_request.publish(control_request)
+        rospy.set_param('SP_LANE_NUM', lane_num_msg.data)
+        sp_lanenum.publish(lane_num_msg)
+        print("Loop result for speed planner: ", control_request.data, lane_num_msg.data, rospy.is_shutdown())
+        sys.stdout.flush()
+        r.sleep()
+    print("Speed planner exiting!")
+    sys.stdout.flush()
 
 if __name__ == "__main__":
     # TODO: make these cmd line params but use these as defaults
     gpsfile = '/etc/libpanda.d/latest_gps'
     i24_geo_file = '/etc/libpanda.d/i24_geo.json'
     circles_planner_file = '/etc/libpanda.d/speed_planner.json'
+    lane_control_allowable_file="/etc/libpanda.d/lane_control_allowable.json"
     #rospy.loginfo('==============================================================')
     #rospy.loginfo('==============================================================')
     #rospy.loginfo('==============================================================')
@@ -213,6 +256,4 @@ if __name__ == "__main__":
 #        nodename = sys.argv[1]
 #        main(gpsfile, i24_geo_file, circles_planner_file, nodename)
 #    else:
-    main(gpsfile, i24_geo_file, circles_planner_file)
-
-
+    main(gpsfile, i24_geo_file, circles_planner_file, lane_control_allowable_file)
