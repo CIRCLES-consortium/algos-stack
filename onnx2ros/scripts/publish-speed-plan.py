@@ -198,7 +198,7 @@ def main(gpsfile, i24_geo_file, circles_planner_file, lane_control_allowable_fil
     rospy.init_node(name=nodename)
     global pos_pub
     pos_pub = rospy.Publisher('/xpos', Float64, queue_size=10)
-    rospy.Subscriber('/is_westbound', Bool, wb_callback)
+    rospy.Subscriber('/is_westbound', Int16, wb_callback)
     rospy.Subscriber('/car/libpanda/controls_allowed_preliminary', Bool, preliminary_controls_allowed_callback)
 
     global sp_speed
