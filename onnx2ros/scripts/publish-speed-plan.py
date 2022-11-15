@@ -56,11 +56,11 @@ def wb_callback(data):
         #control_allowable.data = False
         print('Printing default message, sWestbound=', is_westbound,' or maybe missing file ', circles_planner_file)
     elif is_westbound == 0:  # Side street (neither east nor west)
-        target_speed = 15
-        target_speed_200 = 15
-        target_speed_500 = 15
-        target_speed_1000 = 15
-        max_headway.data = 0
+        target_speed = 10
+        target_speed_200 = 10
+        target_speed_500 = 10
+        target_speed_1000 = 10
+        max_headway.data = 1
         print('On a side street, speed planner limited to 15')
     else:
         speed_planner = json.loads(open(circles_planner_file).read())
