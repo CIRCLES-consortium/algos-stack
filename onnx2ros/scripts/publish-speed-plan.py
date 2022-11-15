@@ -98,18 +98,18 @@ def wb_callback(data):
     sp_headway.publish(max_headway)
     #sp_control_allowable.publish(control_allowable)
 
-def check_if_control_allowable(filename):
-    str = open(filename).read()
-    try:
-        data = json.loads(str)
-        allowable_str = data['ctrl_allowed']
-        print("Current allowable_str: ", allowable_str, str)
-        sys.stdout.flush()
-        return int(allowable_str) > 0
-    except Exception as e:
-        print(e)
-        print("Culprit: ", str)
-        return check_if_control_allowable(filename)
+def get_lane_control_file(filename):
+    with open(filename, "r") as f:    
+        try:
+            data = json.load(f)
+            allowable_str = data['ctrl_allowed']
+            lane_num_str = data['lane_num']
+            print("Current allowable_str, lane_num_str: ({}, {}), {}".format(allowable_str, lane_num_str, data))
+            return (int(allowable_str) > 0, int(lane_num_str))
+        except Exception as e:
+            print(e)
+            print("Culprit: ", data)
+            return (False, 2)
 
 def getGPSLocation(filename):
     """Returns lat,long as a pair. If fix is not A, then return None"""
