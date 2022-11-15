@@ -16,6 +16,7 @@
     <param name="/SP_MAX_HEADWAY" value="$(arg SP_MAX_HEADWAY)"/>
     <param name="/SP_UNIT_TEST_FILE" value="$(find onnx2ros)/unit_test_output.csv" />
     <param name="/SP_UNIT_TEST_FILE_KATHY" value="$(find onnx2ros)/unit_test_output_kathy.csv" />
+    <param name="/WESTBOUND_VALIDATION_FILE" value="$(find onnx2ros)/westbound_validation.csv" />
 
     <param name="model_slow" type="string" value="$(find onnx2ros)/../controllers/RL-cruise-hybrid/rl_acc_blind_sp/model.onnx"/>
     <param name="model_fast" type="string" value="$(find onnx2ros)/../controllers/RL-cruise-hybrid/rl_acc_blind_sp_c/model.onnx"/>
