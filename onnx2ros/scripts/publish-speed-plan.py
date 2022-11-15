@@ -218,7 +218,7 @@ def main(gpsfile, i24_geo_file, circles_planner_file, lane_control_allowable_fil
         control_request = Bool()
         lane_num_msg = Int16()
         lane_num_msg.data = 2
-        control_request.data = preliminary_controls_allowed # TODO FIX temporary solution (ALWAYS setting control allowable to true)
+        control_request.data = False # TODO FIX temporary solution (ALWAYS setting control allowable to true)
         if os.path.exists(lane_control_allowable_file):
             (control_allowable_value, lane_num_value) = get_lane_control_file(lane_control_allowable_file)
             control_request.data = control_allowable_value
