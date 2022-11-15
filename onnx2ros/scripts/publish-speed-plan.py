@@ -231,7 +231,6 @@ def main(gpsfile, i24_geo_file, circles_planner_file, lane_control_allowable_fil
         else:
             (control_allowable_value, lane_num_value) = get_lane_control_file(lane_control_allowable_file)
 #             control_allowable.data = control_allowable_value and preliminary_controls_allowed
-#             control_allowable.data = preliminary_controls_allowed
             lane_num_msg.data = lane_num_value
         rospy.set_param('SP_CONTROL_ALLOWABLE', control_allowable.data)
         sp_control_allowable.publish(control_allowable)
