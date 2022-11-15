@@ -10,6 +10,8 @@
 #include <geometry_msgs/Twist.h>
 #include <std_msgs/Float64.h>
 #include <std_msgs/Int16.h>
+#include <sensor_msgs/NavSatFix.h>
+#include "sensor_msgs/NavSatStatus.h"
 
 #include <algorithm>
 #include <iostream>

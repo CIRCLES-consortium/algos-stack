@@ -79,7 +79,7 @@ PromptReader::PromptReader(ros::NodeHandle *nh, std::string onnx_model_nathan, s
   sub_spspeed1000 = nh->subscribe("sp/target_speed_1000", 10, &PromptReader::callback_spspeed1000, this);  // m/s
   sub_spmaxheadway = nh->subscribe("sp/max_headway", 10, &PromptReader::callback_spmaxheadway, this);
   sub_gpsfix = nh->subscribe("gps_fix", 10, &PromptReader::callback_gpsfix, this);
-  sub_westbound = nh->subscribe("is_westbound", 10, &PromptReader::callback_iswestbound, this);
+  sub_iswestbound = nh->subscribe("is_westbound", 10, &PromptReader::callback_iswestbound, this);
 
 
   state_v.data = 0;  // m/s
