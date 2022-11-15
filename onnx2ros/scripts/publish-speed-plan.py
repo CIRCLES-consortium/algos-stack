@@ -108,7 +108,6 @@ def get_lane_control_file(filename):
             return (int(allowable_str) > 0, int(lane_num_str))
         except Exception as e:
             print(e)
-            print("Culprit: ", data)
             return (False, 2)
 
 def getGPSLocation(filename):
