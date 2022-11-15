@@ -46,7 +46,7 @@ def wb_callback(data):
     # lane_num = rospy.get_param("/LANE_NUM")
     lane_num = rospy.get_param('SP_LANE_NUM')
 
-    if not os.path.exists(circles_planner_file) or os.stat(circles_planner_file).st_size == 0 or not is_westbound or lane_num not in (2,3,4):
+    if not os.path.exists(circles_planner_file) or os.stat(circles_planner_file).st_size == 0 or is_westbound == -1 or lane_num not in (2,3,4):
     #if not os.path.exists(circles_planner_file) or os.stat(file_path).st_size == 0 or not is_westbound:
         target_speed = 30
         target_speed_200 = 30
@@ -55,6 +55,13 @@ def wb_callback(data):
         max_headway.data = 0
         #control_allowable.data = False
         print('Printing default message, sWestbound=', is_westbound,' or maybe missing file ', circles_planner_file)
+    elif is_westbound == 0:  # Side street (neither east nor west)
+        target_speed = 15
+        target_speed_200 = 15
+        target_speed_500 = 15
+        target_speed_1000 = 15
+        max_headway.data = 0
+        print('On a side street, speed planner limited to 15')
     else:
         speed_planner = json.loads(open(circles_planner_file).read())
         pub_at = ast.literal_eval(speed_planner[0]['published_at'])
@@ -266,5 +273,3 @@ if __name__ == "__main__":
 #        main(gpsfile, i24_geo_file, circles_planner_file, nodename)
 #    else:
     main(gpsfile, i24_geo_file, circles_planner_file, lane_control_allowable_file)
-
-
