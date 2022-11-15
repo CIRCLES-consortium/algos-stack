@@ -34,6 +34,7 @@ BaseReader::BaseReader(ros::NodeHandle *nh, std::string onnx_model_nathan, std::
   for (int i = 0; i < 6; i++) {
     prev_accels.push_back(0.0);
   }
+  model_slow = true;
 }
 
 std::vector<double> BaseReader::forward(std::vector<float> input_values) {
@@ -170,10 +171,31 @@ int PromptReader::convertGapDataToSetting(double out) {
 }
 
 void PromptReader::publish() {
+  /* 
+  If currently model slow, cannot transition back to model fast until above 24.5 m/s. 
+  If currently model fast, cannot transition back to model slow until below 25.5 m/s.
+ 
+  If currently model_slow, enter the logic for model_slow. If currently model_fast, can only enter the logic for model_slow
+  if below SPEED_THRESHOLD - 0.5 
+
+  */
   std::vector<float> input_values;
   input_values.clear();
 
-  if (state_spspeed.data < SPEED_THRESHOLD) { //Populate input fields for Nathan's controller
+  if ((model_slow && state_spspeed.data < SPEED_THRESHOLD) || !(model_slow && state_spspeed.data >= SPEED_THRESHOLD)) {
+    // If the current speed threshold matches the threshold
+    model_slow = state_spspeed.data < SPEED_THRESHOLD;
+  } else { // Managing the transition
+    if (model_slow) { 
+      // If prev step we were using model_slow, only switch to model_fast if fast enough
+      model_slow = state_spspeed.data < SPEED_THRESHOLD + 0.5
+    } else { 
+      // If prev step we were using fast model, only switch to model_fast if slow enough
+      model_slow = state_spspeed.data < SPEED_THRESHOLD - 0.5
+    }
+  }
+
+  if (model_slow) { //Populate input fields for Nathan's controller
     input_values.push_back(state_v.data / 40.0);
     for (int i = 0; i < 5; i++) {
       input_values.push_back(prev_accels[i] / 4.0);
