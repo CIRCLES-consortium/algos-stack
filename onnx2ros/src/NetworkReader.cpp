@@ -128,7 +128,7 @@ PromptReader::PromptReader(ros::NodeHandle *nh, std::string onnx_model_nathan, s
     std::string westbound_validation_file_path;
     nh->getParam("WESTBOUND_VALIDATION_FILE", westbound_validation_file_path);
     westbound_validation_file = fopen(westbound_validation_file_path.c_str(), "w+");
-    fprintf(westbound_validation_file, "vin,gps_fix,is_westbound\n");
+    fprintf(westbound_validation_file, "gps_fix,is_westbound\n");
   }
 
 
@@ -179,7 +179,9 @@ void PromptReader::callback_spmaxheadway(const std_msgs::Int16& spmaxheadway_msg
 }
 
 void PromptReader::callback_gpsfix(const sensor_msgs::NavSatFix& gps_fix_msg) {
-  gps_fix = gps_fix_msg;
+  // gps_fix = gps_fix_msg;
+  latitude = gps_fix_msg.latitude;
+  longitude = gps_fix_msg.longitude;
 }
 
 void PromptReader::callback_iswestbound(const std_msgs::Int16& is_westbound_msg) {
@@ -351,12 +353,14 @@ void PromptReader::publish() {
   if (westbound_validation) {
     // /gps_fix and /is_westbound
     std::stringstream westbound_ss;
-    westbound_ss << gps_fix.data << "," << is_westbound.data;
+    // westbound_ss << gps_fix.data << "," << is_westbound.data;
   
-    std::string westbound_ss = westbound_ss.str();
+    // std::string westbound_ss = westbound_ss.str();
 
-    fprintf(westbound_validation_file, "%s\n",
-        westbound_ss.c_str());
+    fprintf(westbound_validation_file, "%lf,%lf,%d\n",
+        latitude,
+        longitude,
+        is_westbound);
       fflush(westbound_validation_file);
   }
   //"prev_vels,prev_accels,prev_req_vels,state_v,state_accel,state_minicar,state_setspeed,state_timegap,state_spspeed,state_spspeed200,state_spspeed500,state_spspeed1000,state_spmaxheadway,target_speed,target_gap\n");

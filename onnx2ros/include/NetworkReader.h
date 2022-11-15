@@ -34,7 +34,7 @@ class BaseReader{
   std::vector<std::vector<int64_t>> input_shapes_nathan, input_shapes_kathy;
   std::vector<float> prev_vels, prev_req_vels, prev_accels;
   ros::Subscriber sub_v, sub_accel, sub_minicar, sub_setspeed, sub_timegap, sub_spspeed, sub_spspeed200, sub_spspeed500, sub_spspeed1000, sub_spmaxheadway, sub_gpsfix, sub_iswestbound;
-  std_msgs::Float64 state_v, state_accel, state_spspeed, state_spspeed200, state_spspeed500, state_spspeed1000;
+  std_msgs::Float64 state_v, state_accel, state_spspeed, state_spspeed200, state_spspeed500, state_spspeed1000, latitude, longitude;
   std_msgs::Int16 state_spmaxheadway, state_setspeed, state_timegap, state_minicar, is_westbound;
   sensor_msgs::NavSatFix gps_fix;
   int unit_test;
