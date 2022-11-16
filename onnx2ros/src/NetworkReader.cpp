@@ -34,6 +34,10 @@ BaseReader::BaseReader(ros::NodeHandle *nh, std::string onnx_model_nathan, std::
   for (int i = 0; i < 6; i++) {
     prev_accels.push_back(0.0);
   }
+
+  last_requested_speeds = {-1, -1, -1, -1, -1, -1, -1, -1, -1, -1};
+
+  smooth_chatter_time_counter = 0;  // number of time steps since the speed setting was actuated
 }
 
 std::vector<double> BaseReader::forward(std::vector<float> input_values) {
@@ -246,7 +250,42 @@ void PromptReader::publish() {
   temp = clamp(temp, lower_bound, upper_bound);
   temp = clamp(static_cast<int>(temp), 20, 73);
 
-  msg_speed.data = temp;
+  // fix chatter: if oscillating in n and n+1 requests for the last second, stop switching
+  bool change_speed_setting = false;
+
+  // find out if `last_requested_speeds` only contains two different values n and n+1
+  int unique_val_1 = -99;
+  int unique_val_2 = -99;
+  for (int i = 0; i < 10; ++i) {
+    int val = last_requested_speeds[i];
+    // if we already know that value, ignore
+    if (val == unique_val_1) continue;
+    else if (val == unique_val_2) continue;
+    // if not and we've seen 0 or 1 unique values so far, store it
+    else if (unique_val_1 == -99) unique_val_1 = val;
+    else if (unique_val_2 == -99) unique_val_2 = val;
+    // we already have 2 unique values and are seeing a third one
+    else { change_speed_setting = true; break; }
+  }
+  if (change_speed_setting == false) {
+    // we have less than 2 unique values
+    if (unique_val_1 == -99 || unique_val_2 == -99)
+      change_speed_setting = true;
+    // two unique values but not adjacent
+    else if (unique_val_1 - unique_val_2 != 1 && unique_val_1 - unique_val_2 != -1)
+      change_speed_setting = true;
+  }
+
+  // send speed setting request
+  if (change_speed_setting)
+    msg_speed.data = temp;  // use requested speed setting
+  else
+    msg_speed.data = state_setspeed.data;  // keep current speed setting
+
+  // append previous rotate to stack
+  last_requested_speeds.insert(last_requested_speeds.begin(), (int)temp);  // mph
+  last_requested_speeds.pop_back();
+
   msg_gap.data = PromptReader::convertGapDataToSetting(result[1]);
   // std::cout << "NN output: " << msg_speed.data << " , avg_speed:  "  << avg_speed << " ,clamped val:  " << clamped_val << "\n";
   // std::cout << "Speed planner speed: " << state_spspeed.data << "\n";

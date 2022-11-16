@@ -38,6 +38,8 @@ class BaseReader{
   FILE* unit_test_file;
   FILE* unit_test_file_kathy;
 
+  std::vector<int> last_requested_speeds;
+
  public:
   BaseReader(ros::NodeHandle *nh, std::string onnx_model_nathan, std::string onnx_model_kathy);
 
