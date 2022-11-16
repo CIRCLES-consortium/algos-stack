@@ -34,6 +34,8 @@ BaseReader::BaseReader(ros::NodeHandle *nh, std::string onnx_model_nathan, std::
   for (int i = 0; i < 6; i++) {
     prev_accels.push_back(0.0);
   }
+
+  smooth_chatter_time_counter = 0;  // number of time steps since the speed setting was actuated
 }
 
 std::vector<double> BaseReader::forward(std::vector<float> input_values) {
@@ -246,7 +248,17 @@ void PromptReader::publish() {
   temp = clamp(temp, lower_bound, upper_bound);
   temp = clamp(static_cast<int>(temp), 20, 73);
 
-  msg_speed.data = temp;
+  // dont change the speed setting, unless requested speed setting is more than 
+  // 1 mph away from current speed setting, or unless it has been a certain time
+  // since we last authorized a change
+  if (std::abs(state_setspeed.data - temp) > 1.5 || smooth_chatter_time_counter > 30) {
+    msg_speed.data = temp;
+    smooth_chatter_time_counter = 0;
+  } else {
+    msg_speed.data = state_setspeed.data;
+    smooth_chatter_time_counter++;
+  }
+
   msg_gap.data = PromptReader::convertGapDataToSetting(result[1]);
   // std::cout << "NN output: " << msg_speed.data << " , avg_speed:  "  << avg_speed << " ,clamped val:  " << clamped_val << "\n";
   // std::cout << "Speed planner speed: " << state_spspeed.data << "\n";
