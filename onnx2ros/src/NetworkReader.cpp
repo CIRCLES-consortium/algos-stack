@@ -251,7 +251,8 @@ void PromptReader::publish() {
   // dont change the speed setting, unless requested speed setting is more than 
   // 1 mph away from current speed setting, or unless it has been a certain time
   // since we last authorized a change
-  if (std::abs(state_setspeed.data - temp) > 1.5 || smooth_chatter_time_counter > 30) {
+  if ((state_setspeed.data - temp > 1.5) || (state_setspeed.data - temp < -1.5) 
+      || (smooth_chatter_time_counter > 30)) {
     msg_speed.data = temp;
     smooth_chatter_time_counter = 0;
   } else {

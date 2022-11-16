@@ -17,7 +17,6 @@
 #include <vector>
 #include <experimental_onnxruntime_cxx_api.h>
 #include <cstdio>
-#include <cstdlib>
 #include <numeric>
 
 class BaseReader{
